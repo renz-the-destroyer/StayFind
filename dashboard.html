@@ -16,18 +16,6 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            transition: background 0.1s; /* For the flashing effect */
-        }
-
-        /* Flashing Background Class */
-        .flash-active {
-            animation: bg-flash 0.2s infinite;
-        }
-
-        @keyframes bg-flash {
-            0% { background: #ff0000; }
-            50% { background: #00ff00; }
-            100% { background: #0000ff; }
         }
 
         .dashboard-card {
@@ -44,6 +32,7 @@
             z-index: 10;
         }
 
+        /* The card still shakes for impact */
         .screen-shake { animation: card-vibrate 0.1s linear infinite; }
 
         @keyframes card-vibrate {
@@ -166,24 +155,15 @@
     });
 
     document.getElementById('nextBtn').addEventListener('click', () => {
-        // Transition UI
         document.getElementById('step1').classList.add('hidden');
         document.getElementById('step2').classList.remove('hidden');
         card.classList.add('screen-shake');
-        document.body.classList.add('flash-active');
 
-        // Play Sound 1
+        // Chain Reaction
         s1.play();
-
-        // When Sound 1 ends, play Sound 2
         s1.onended = () => { s2.play(); };
-
-        // When Sound 2 ends, play Sound 3
         s2.onended = () => { s3.play(); };
-
-        // Stop the flashing/shaking after a while (optional)
         s3.onended = () => {
-            document.body.classList.remove('flash-active');
             card.classList.remove('screen-shake');
         };
     });
