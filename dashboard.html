@@ -22,28 +22,29 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0 14px 28px rgba(0,0,0,0.1);
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             width: 90%;
-            max-width: 350px;
-            /* This ensures the card itself never exceeds the screen height */
-            max-height: 95vh; 
+            max-width: 340px;
+            max-height: 95vh;
             display: flex;
             flex-direction: column;
             animation: slideUp 0.6s ease-out;
         }
 
+        /* The Surprise Vibrations */
         @keyframes card-vibrate {
             0% { transform: translate(0); }
-            25% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -1px); }
+            25% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            75% { transform: translate(2px, -2px); }
             100% { transform: translate(0); }
         }
 
-        @keyframes flash {
-            0% { background-color: #42a5f5; transform: scale(1); }
-            50% { background-color: #ff5252; transform: scale(1.05); }
-            100% { background-color: #42a5f5; transform: scale(1); }
+        @keyframes flash-bg {
+            0% { background-color: #42a5f5; }
+            50% { background-color: #ff5252; }
+            100% { background-color: #42a5f5; }
         }
 
         .screen-shake { animation: card-vibrate 0.1s linear infinite; }
@@ -52,13 +53,13 @@
             display: inline-block;
             animation: card-vibrate 0.1s infinite;
             color: #d32f2f;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 900;
             margin: 5px 0;
         }
 
         .brand-logo {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: #0d47a1;
             font-weight: 800;
             margin-bottom: 5px;
@@ -74,43 +75,42 @@
             color: #FFFFFF;
             font-size: 10px;
             font-weight: bold;
-            padding: 8px;
+            padding: 10px;
             text-transform: uppercase;
             cursor: pointer;
-            margin-top: 8px;
+            margin-top: 10px;
             width: 100%;
         }
 
-        .btn-flash { animation: flash 0.8s infinite; }
+        .btn-flash { animation: flash-bg 0.6s infinite; }
 
-        /* THE FIX: Flexible container that shrinks the image to fit the remaining space */
-        .img-container {
-            flex: 1; 
+        /* Container that ensures the image is 100% visible */
+        .img-viewer {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 5px 0;
-            min-height: 0; /* Important for flex shrink */
+            margin: 10px 0;
+            min-height: 0;
         }
 
         img { 
             max-width: 100%;
-            max-height: 45vh; /* Image will never take more than 45% of screen height */
-            width: auto;
+            max-height: 40vh; /* Scaled so you see the WHOLE image + buttons */
             height: auto;
-            border-radius: 10px;
+            width: auto;
             border: 3px solid #0d47a1;
-            display: block;
+            border-radius: 8px;
             object-fit: contain;
         }
 
-        .progress-container { width: 100%; background-color: #f3f3f3; border-radius: 10px; margin-top: 10px; }
-        .progress-bar { width: 0%; height: 8px; background-color: #0d47a1; border-radius: 10px; transition: width 0.5s; }
+        .progress-bar-container { width: 100%; background: #f3f3f3; border-radius: 10px; margin-top: 10px; }
+        .bar-fill { width: 0%; height: 8px; background: #0d47a1; border-radius: 10px; transition: width 0.4s; }
     </style>
 </head>
 <body>
 
-    <audio id="trollSound">
+    <audio id="trollSound" preload="auto">
         <source src="https://www.myinstants.com/media/sounds/fahhhhhhhhhhhhhh.mp3" type="audio/mpeg">
     </audio>
 
@@ -118,25 +118,23 @@
         <div class="brand-logo">Stay<span>Find</span></div>
         
         <div id="loader">
-            <p style="font-weight: bold; color: #0d47a1; font-size: 11px; margin: 0;">Syncing Data...</p>
-            <div class="progress-container">
-                <div class="progress-bar" id="myBar"></div>
-            </div>
+            <p style="font-weight:bold; color:#0d47a1; font-size:11px;">Syncing profile...</p>
+            <div class="progress-bar-container"><div class="bar-fill" id="myBar"></div></div>
         </div>
 
         <div id="step1" class="hidden">
-            <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">pak u ka boii</p>
+            <p style="font-size: 1.3rem; font-weight: bold;">pak u ka boii</p>
             <button id="nextBtn">nixt</button>
         </div>
 
         <div id="step2" class="hidden">
             <p class="shake-text">pA-kak</p>
             
-            <div class="img-container">
-                <img src="https://i.postimg.cc/mDv3QCX7/j3.png" alt="Dashboard Content">
+            <div class="img-viewer">
+                <img src="https://i.postimg.cc/mDv3QCX7/j3.png" alt="Whole Image">
             </div>
             
-            <a href="https://i.postimg.cc/mDv3QCX7/j3.png" download="surprise.png" target="_blank" style="text-decoration: none; width: 100%;">
+            <a href="https://i.postimg.cc/mDv3QCX7/j3.png" download="surprise.png" target="_blank" style="width: 100%;">
                 <button class="btn-flash">Download Image</button>
             </a>
 
@@ -153,8 +151,6 @@
         authDomain: "stayfind-f7a28.firebaseapp.com",
         projectId: "stayfind-f7a28",
         databaseURL: "https://stayfind-f7a28-default-rtdb.asia-southeast1.firebasedatabase.app",
-        storageBucket: "stayfind-f7a28.firebasestorage.app",
-        messagingSenderId: "682175949982",
         appId: "1:682175949982:web:e05561d627caaf3d5d5f8f"
     };
 
@@ -170,33 +166,30 @@
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            let width = 0;
-            const interval = setInterval(() => {
-                if (width >= 100) {
-                    clearInterval(interval);
-                    loader.style.display = 'none';
-                    step1.classList.remove('hidden');
-                } else {
-                    width += 10;
-                    bar.style.width = width + '%';
-                }
-            }, 60);
+            let w = 0;
+            const int = setInterval(() => {
+                if (w >= 100) { clearInterval(int); loader.style.display = 'none'; step1.classList.remove('hidden'); }
+                else { w += 10; bar.style.width = w + '%'; }
+            }, 70);
         } else {
             window.location.href = "index.html"; 
         }
     });
 
+    // The Surprise Trigger
     document.getElementById('nextBtn').addEventListener('click', () => {
+        // Play sound instantly on click
+        sound.currentTime = 0; 
         sound.play();
+        
+        // Show everything else
         card.classList.add('screen-shake');
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = "index.html";
-        });
+        signOut(auth).then(() => { window.location.href = "index.html"; });
     });
 </script>
 </body>
