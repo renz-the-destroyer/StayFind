@@ -28,14 +28,13 @@
             animation: slideUp 0.6s ease-out;
         }
 
-        /* Animations */
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes shake {
-            0% { transform: translate(2px, 1px) rotate(0deg); }
+            0% { transform: translate(1px, 1px) rotate(0deg); }
             20% { transform: translate(-3px, 0px) rotate(3deg); }
             40% { transform: translate(3px, 2px) rotate(-3deg); }
             60% { transform: translate(-3px, 1px) rotate(0deg); }
@@ -45,7 +44,7 @@
 
         .shake {
             display: inline-block;
-            animation: shake 0.2s infinite; /* Fast shake */
+            animation: shake 0.2s infinite;
             color: #d32f2f;
             font-size: 2.5rem;
             font-weight: 900;
@@ -72,15 +71,24 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        button:hover { background: #1565c0; }
+
+        .img-box {
             margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 4px solid #0d47a1;
+            background: #f0f0f0;
         }
 
         img {
             width: 100%;
-            max-width: 300px;
-            border-radius: 15px;
-            margin-top: 15px;
-            border: 4px solid #0d47a1;
+            height: auto;
+            display: block; /* Removes bottom gap */
         }
 
         #loader { font-weight: bold; color: #0d47a1; }
@@ -91,7 +99,7 @@
     <div class="dashboard-card">
         <div class="brand-logo">Stay<span>Find</span></div>
         
-        <div id="loader">Syncing profile...</div>
+        <div id="loader">Validating User...</div>
 
         <div id="step1" class="hidden">
             <p style="font-size: 1.5rem; font-weight: bold;">pak u ka boii</p>
@@ -100,8 +108,8 @@
 
         <div id="step2" class="hidden">
             <p class="shake">pA-kak</p>
-            <div>
-                <img src="https://i.postimg.cc/mD8X7G9L/Screenshot-2025-01-26-194121.png" alt="User Image">
+            <div class="img-box">
+                <img src="https://i.postimg.cc/mDv3QCX7/j3.png" alt="Dashboard Content">
             </div>
             <button id="logoutBtn" style="background:#546e7a;">Sign Out</button>
         </div>
@@ -128,24 +136,21 @@
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
 
-    // Check if user is logged in
     onAuthStateChanged(auth, (user) => {
         if (user) {
             loader.style.display = 'none';
             step1.classList.remove('hidden');
         } else {
-            // Redirect back to signup/login if not logged in
+            // If they aren't logged in, they get sent back to login
             window.location.href = "index.html"; 
         }
     });
 
-    // Toggle steps
     document.getElementById('nextBtn').addEventListener('click', () => {
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
     });
 
-    // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
         signOut(auth).then(() => {
             window.location.href = "index.html";
