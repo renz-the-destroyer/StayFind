@@ -15,6 +15,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden; /* Prevents scrollbars during shake */
         }
 
         .dashboard-card {
@@ -28,12 +29,25 @@
             animation: slideUp 0.6s ease-out;
         }
 
+        /* Dashboard Screen Shake Animation */
+        .screen-shake {
+            animation: card-vibrate 0.1s linear infinite;
+        }
+
+        @keyframes card-vibrate {
+            0% { transform: translate(0); }
+            25% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            75% { transform: translate(2px, -2px); }
+            100% { transform: translate(-2px, 2px); }
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes shake {
+        @keyframes text-shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             20% { transform: translate(-3px, 0px) rotate(3deg); }
             40% { transform: translate(3px, 2px) rotate(-3deg); }
@@ -44,7 +58,7 @@
 
         .shake {
             display: inline-block;
-            animation: shake 0.2s infinite;
+            animation: text-shake 0.2s infinite;
             color: #d32f2f;
             font-size: 2.5rem;
             font-weight: 900;
@@ -70,13 +84,10 @@
             padding: 12px 30px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.2s, background 0.3s;
+            transition: 0.3s;
             margin-top: 15px;
             width: 100%;
         }
-
-        button:hover { background: #1565c0; transform: scale(1.02); }
-        button:active { transform: scale(0.98); }
 
         .img-box {
             margin-top: 15px;
@@ -87,48 +98,30 @@
             line-height: 0;
         }
 
-        img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+        img { width: 100%; height: auto; display: block; }
 
-        .progress-container {
-            width: 100%;
-            background-color: #f3f3f3;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 10px;
-            background-color: #0d47a1;
-            border-radius: 10px;
-            transition: width 0.5s;
-        }
-
-        #loader-text { font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
+        .progress-container { width: 100%; background-color: #f3f3f3; border-radius: 10px; margin-top: 10px; }
+        .progress-bar { width: 0%; height: 10px; background-color: #0d47a1; border-radius: 10px; transition: width 0.5s; }
     </style>
 </head>
 <body>
 
-    <audio id="laughSound">
-        <source src="https://www.myinstants.com/media/sounds/evil-laugh.mp3" type="audio/mpeg">
+    <audio id="trollSound">
+        <source src="https://www.myinstants.com/media/sounds/fahhhhhhhhhhhhhh.mp3" type="audio/mpeg">
     </audio>
 
-    <div class="dashboard-card">
+    <div class="dashboard-card" id="mainCard">
         <div class="brand-logo">Stay<span>Find</span></div>
         
         <div id="loader">
-            <p id="loader-text">Validating User...</p>
+            <p style="font-weight: bold; color: #0d47a1;">Syncing Data...</p>
             <div class="progress-container">
                 <div class="progress-bar" id="myBar"></div>
             </div>
         </div>
 
         <div id="step1" class="hidden">
-            <p style="font-size: 1.5rem; font-weight: bold; color: #333;">pak u ka boii</p>
+            <p style="font-size: 1.5rem; font-weight: bold;">pak u ka boii</p>
             <button id="nextBtn">nixt</button>
         </div>
 
@@ -150,6 +143,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    // Your Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyD7v_LWg5_I_Y_m-iUIWa09cade8JTkgHk",
         authDomain: "stayfind-f7a28.firebaseapp.com",
@@ -167,7 +161,8 @@
     const bar = document.getElementById('myBar');
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
-    const laugh = document.getElementById('laughSound');
+    const sound = document.getElementById('trollSound');
+    const card = document.getElementById('mainCard');
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -178,18 +173,18 @@
                     loader.style.display = 'none';
                     step1.classList.remove('hidden');
                 } else {
-                    width += 5;
+                    width += 10;
                     bar.style.width = width + '%';
                 }
-            }, 50);
+            }, 100);
         } else {
             window.location.href = "index.html"; 
         }
     });
 
     document.getElementById('nextBtn').addEventListener('click', () => {
-        // Play the sound
-        laugh.play();
+        sound.play(); // Play your "fahhhh" sound
+        card.classList.add('screen-shake'); // Shake the whole dashboard
         
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
