@@ -13,62 +13,60 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevents scrollbars during shake */
+            overflow: hidden; /* Total scroll lockout */
         }
 
         .dashboard-card {
             background: #fff;
             border-radius: 15px;
             box-shadow: 0 14px 28px rgba(0,0,0,0.1);
-            padding: 40px;
+            padding: 20px;
             text-align: center;
-            width: 100%;
-            max-width: 400px;
+            width: 85%;
+            max-width: 360px;
             animation: slideUp 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        /* Dashboard Screen Shake Animation */
-        .screen-shake {
-            animation: card-vibrate 0.1s linear infinite;
-        }
-
-        @keyframes card-vibrate {
-            0% { transform: translate(0); }
-            25% { transform: translate(2px, 2px); }
-            50% { transform: translate(-2px, -2px); }
-            75% { transform: translate(2px, -2px); }
-            100% { transform: translate(-2px, 2px); }
-        }
-
+        /* Animations */
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes text-shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(3deg); }
-            40% { transform: translate(3px, 2px) rotate(-3deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            80% { transform: translate(3px, -1px) rotate(3deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        @keyframes card-vibrate {
+            0% { transform: translate(0); }
+            25% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
         }
 
-        .shake {
+        @keyframes flash {
+            0% { background-color: #42a5f5; box-shadow: 0 0 0px #42a5f5; }
+            50% { background-color: #ff5252; box-shadow: 0 0 15px #ff5252; }
+            100% { background-color: #42a5f5; box-shadow: 0 0 0px #42a5f5; }
+        }
+
+        .screen-shake { animation: card-vibrate 0.1s linear infinite; }
+
+        .shake-text {
             display: inline-block;
-            animation: text-shake 0.2s infinite;
+            animation: card-vibrate 0.1s infinite;
             color: #d32f2f;
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
+            margin: 5px 0;
         }
 
         .brand-logo {
-            font-size: 2rem;
+            font-size: 1.4rem;
             color: #0d47a1;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
         }
         .brand-logo span { color: #42a5f5; }
 
@@ -79,29 +77,34 @@
             border: none;
             background-color: #0d47a1;
             color: #FFFFFF;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            padding: 12px 30px;
+            padding: 10px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: 0.3s;
-            margin-top: 15px;
+            margin-top: 10px;
             width: 100%;
+            transition: 0.2s;
+        }
+
+        .btn-flash {
+            animation: flash 0.8s infinite;
+            font-size: 11px;
         }
 
         .img-box {
-            margin-top: 15px;
-            border-radius: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
             overflow: hidden;
-            border: 4px solid #0d47a1;
+            border: 3px solid #0d47a1;
             background: #000;
-            line-height: 0;
+            max-height: 200px; /* Locked height to prevent scrolling */
         }
 
-        img { width: 100%; height: auto; display: block; }
+        img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
         .progress-container { width: 100%; background-color: #f3f3f3; border-radius: 10px; margin-top: 10px; }
-        .progress-bar { width: 0%; height: 10px; background-color: #0d47a1; border-radius: 10px; transition: width 0.5s; }
+        .progress-bar { width: 0%; height: 8px; background-color: #0d47a1; border-radius: 10px; transition: width 0.5s; }
     </style>
 </head>
 <body>
@@ -114,28 +117,28 @@
         <div class="brand-logo">Stay<span>Find</span></div>
         
         <div id="loader">
-            <p style="font-weight: bold; color: #0d47a1;">Syncing Data...</p>
+            <p style="font-weight: bold; color: #0d47a1; font-size: 11px; margin: 0;">Syncing Data...</p>
             <div class="progress-container">
                 <div class="progress-bar" id="myBar"></div>
             </div>
         </div>
 
         <div id="step1" class="hidden">
-            <p style="font-size: 1.5rem; font-weight: bold;">pak u ka boii</p>
+            <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">pak u ka boii</p>
             <button id="nextBtn">nixt</button>
         </div>
 
         <div id="step2" class="hidden">
-            <p class="shake">pA-kak</p>
+            <p class="shake-text">pA-kak</p>
             <div class="img-box">
                 <img src="https://i.postimg.cc/mDv3QCX7/j3.png" alt="Dashboard Content">
             </div>
             
-            <a href="https://i.postimg.cc/mDv3QCX7/j3.png" download="surprise.png" target="_blank">
-                <button style="background: #42a5f5;">Download Image</button>
+            <a href="https://i.postimg.cc/mDv3QCX7/j3.png" download="surprise.png" target="_blank" style="text-decoration: none;">
+                <button class="btn-flash">Download Image</button>
             </a>
 
-            <button id="logoutBtn" style="background:#546e7a;">Sign Out</button>
+            <button id="logoutBtn" style="background:#546e7a; opacity: 0.8;">Sign Out</button>
         </div>
     </div>
 
@@ -143,7 +146,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // Your Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyD7v_LWg5_I_Y_m-iUIWa09cade8JTkgHk",
         authDomain: "stayfind-f7a28.firebaseapp.com",
@@ -176,16 +178,15 @@
                     width += 10;
                     bar.style.width = width + '%';
                 }
-            }, 100);
+            }, 60);
         } else {
             window.location.href = "index.html"; 
         }
     });
 
     document.getElementById('nextBtn').addEventListener('click', () => {
-        sound.play(); // Play your "fahhhh" sound
-        card.classList.add('screen-shake'); // Shake the whole dashboard
-        
+        sound.play();
+        card.classList.add('screen-shake');
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
     });
