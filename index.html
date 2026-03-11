@@ -8,179 +8,224 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
-    <style>
-        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
-        * { box-sizing: border-box; }
+ <style>
+    @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+    * { box-sizing: border-box; }
 
-        body {
-            background: #e0f2f1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            font-family: 'Montserrat', sans-serif;
-            height: 100vh;
-            margin: 0;
-        }
+    body {
+        background: #e0f2f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-family: 'Montserrat', sans-serif;
+        height: 100vh;
+        margin: 0;
+    }
 
-        .brand-logo {
-            margin-bottom: 20px;
-            font-size: 2.5rem;
-            color: #0d47a1;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-        .brand-logo span { color: #42a5f5; }
+    .brand-logo {
+        margin-bottom: 20px;
+        font-size: 2.5rem;
+        color: #0d47a1;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+    .brand-logo span { color: #42a5f5; }
 
-        h1 { font-weight: bold; margin: 0; color: #0d47a1; }
-        p { font-size: 14px; font-weight: 300; line-height: 20px; letter-spacing: 0.5px; margin: 20px 0 30px; }
-        span { font-size: 12px; color: #546e7a; margin-bottom: 10px; }
+    h1 { font-weight: bold; margin: 0; color: #0d47a1; }
+    p { font-size: 14px; font-weight: 300; line-height: 20px; letter-spacing: 0.5px; margin: 20px 0 30px; }
+    span { font-size: 12px; color: #546e7a; margin-bottom: 10px; }
 
-        button {
-            border-radius: 20px;
-            border: 1px solid #0d47a1;
-            background-color: #0d47a1;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 12px 45px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: transform 80ms ease-in, background 0.2s;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    button {
+        border-radius: 20px;
+        border: 1px solid #0d47a1;
+        background-color: #0d47a1;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 12px 45px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: transform 80ms ease-in, background 0.2s;
+        cursor: pointer;
+        margin-top: 10px;
+    }
 
-        button:hover { background-color: #1565c0; }
-        button:active { transform: scale(0.95); }
-        button:disabled { background-color: #b0bec5; border-color: #b0bec5; cursor: not-allowed; }
-        button.ghost { background-color: transparent; border-color: #FFFFFF; }
+    button:hover { background-color: #1565c0; }
+    button:active { transform: scale(0.95); }
+    button:disabled { background-color: #b0bec5; border-color: #b0bec5; cursor: not-allowed; }
+    button.ghost { background-color: transparent; border-color: #FFFFFF; }
 
-        form {
-            background-color: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 0 50px;
-            height: 100%;
-            text-align: center;
-        }
+    form {
+        background-color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 50px;
+        height: 100%;
+        text-align: center;
+    }
 
-        input {
-            background-color: #e3f2fd;
-            border: none;
-            padding: 12px 15px;
-            margin: 8px 0;
-            width: 100%;
-            border-radius: 5px;
-            outline-color: #42a5f5;
-        }
+    input {
+        background-color: #e3f2fd;
+        border: none;
+        padding: 12px 15px;
+        margin: 8px 0;
+        width: 100%;
+        border-radius: 5px;
+        outline-color: #42a5f5;
+    }
 
-        .container {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-            width: 768px;
-            max-width: 100%;
-            min-height: 520px; 
-        }
+    .container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        width: 768px;
+        max-width: 100%;
+        min-height: 520px; 
+    }
 
-        /* Password Wrapper for Eye Icon */
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
+    .password-wrapper {
+        position: relative;
+        width: 100%;
+    }
 
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 20px;
-            cursor: pointer;
-            color: #546e7a;
-        }
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 20px;
+        cursor: pointer;
+        color: #546e7a;
+    }
 
-        .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
-        .sign-in-container { left: 0; width: 50%; z-index: 2; }
-        .container.right-panel-active .sign-in-container { transform: translateX(100%); }
-        .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
-        .container.right-panel-active .sign-up-container {
-            transform: translateX(100%);
-            opacity: 1;
-            z-index: 5;
-            animation: show 0.6s;
-        }
+    .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
+    .sign-in-container { left: 0; width: 50%; z-index: 2; }
+    .container.right-panel-active .sign-in-container { transform: translateX(100%); }
+    .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
+    .container.right-panel-active .sign-up-container {
+        transform: translateX(100%);
+        opacity: 1;
+        z-index: 5;
+        animation: show 0.6s;
+    }
 
-        @keyframes show {
-            0%, 49.99% { opacity: 0; z-index: 1; }
-            50%, 100% { opacity: 1; z-index: 5; }
-        }
+    @keyframes show {
+        0%, 49.99% { opacity: 0; z-index: 1; }
+        50%, 100% { opacity: 1; z-index: 5; }
+    }
 
-        .overlay-container {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            transition: transform 0.6s ease-in-out;
-            z-index: 100;
-        }
+    .overlay-container {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.6s ease-in-out;
+        z-index: 100;
+    }
 
-        .container.right-panel-active .overlay-container { transform: translateX(-100%); }
+    .container.right-panel-active .overlay-container { transform: translateX(-100%); }
 
-        .overlay {
-            background: linear-gradient(to right, #0d47a1, #42a5f5);
-            color: #FFFFFF;
-            position: relative;
-            left: -100%;
-            height: 100%;
-            width: 200%;
-            transform: translateX(0);
-            transition: transform 0.6s ease-in-out;
-        }
+    .overlay {
+        background: linear-gradient(to right, #0d47a1, #42a5f5);
+        color: #FFFFFF;
+        position: relative;
+        left: -100%;
+        height: 100%;
+        width: 200%;
+        transform: translateX(0);
+        transition: transform 0.6s ease-in-out;
+    }
 
-        .container.right-panel-active .overlay { transform: translateX(50%); }
+    .container.right-panel-active .overlay { transform: translateX(50%); }
 
-        .overlay-panel {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 0 40px;
-            text-align: center;
-            top: 0;
-            height: 100%;
-            width: 50%;
-            transition: transform 0.6s ease-in-out;
-        }
+    .overlay-panel {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 40px;
+        text-align: center;
+        top: 0;
+        height: 100%;
+        width: 50%;
+        transition: transform 0.6s ease-in-out;
+    }
 
-        .overlay-left { transform: translateX(-20%); }
-        .container.right-panel-active .overlay-left { transform: translateX(0); }
-        .overlay-right { right: 0; transform: translateX(0); }
-        .container.right-panel-active .overlay-right { transform: translateX(20%); }
+    .overlay-left { transform: translateX(-20%); }
+    .container.right-panel-active .overlay-left { transform: translateX(0); }
+    .overlay-right { right: 0; transform: translateX(0); }
+    .container.right-panel-active .overlay-right { transform: translateX(20%); }
 
-        .social-login-container { margin: 15px 0; display: flex; gap: 10px; }
-        .btn-social {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px 15px;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: background 0.3s ease;
-            cursor: pointer;
-        }
+    .social-login-container { margin: 15px 0; display: flex; gap: 10px; }
+    .btn-social {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 15px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.3s ease;
+        cursor: pointer;
+    }
 
-        .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
-        .btn-social i { margin-right: 8px; }
-    </style>
+    .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
+    .btn-social i { margin-right: 8px; }
+
+    /* --- ADDED FOR OTP MODAL & SPINNER --- */
+     
+    #otpInput {
+    text-align: center;
+    font-size: 24px;   
+    letter-spacing: 8px; 
+    font-weight: bold;
+    color: #0d47a1;
+    margin: 20px 0;
+    }
+     
+     #otpModal {
+        display: none; 
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.8); 
+        z-index: 9999; 
+        justify-content: center; 
+        align-items: center;
+    }
+
+    .otp-box {
+        background: white; 
+        padding: 30px; 
+        border-radius: 10px; 
+        text-align: center; 
+        width: 320px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
     
 </head>
 <body>
@@ -296,6 +341,7 @@
     // 2. SIGN UP WITH OTP TRIGGER
     document.getElementById('signUpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('signUpBtn');
         
         signUpData = {
             name: document.getElementById('regName').value,
@@ -307,9 +353,13 @@
             return Swal.fire({ icon: 'warning', title: 'Wait!', text: 'Password must be at least 8 characters.' });
         }
 
+        // --- START LOADING STATE ---
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Sending OTP...';
+
         generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
         
-        // SEND EMAIL VIA EMAILJS
+        // Initialize EmailJS
         emailjs.init("Y7oJ_Er1PJ59eTUfI"); 
 
         const templateParams = {
@@ -320,16 +370,21 @@
 
         emailjs.send('service_3hidsqf', 'template_cegi0tu', templateParams)
             .then(() => {
-                console.log('OTP sent successfully to ' + signUpData.email);
+                btn.disabled = false;
+                btn.innerText = "Sign Up";
+                
+                // Show modal and set email text
+                document.getElementById('displayEmail').innerText = signUpData.email;
+                document.getElementById('otpModal').style.display = 'flex';
+                
+                console.log("TESTING OTP: " + generatedOtp);
+                Swal.fire('OTP Sent!', 'Check ' + signUpData.email + ' for your code.', 'success');
             }, (error) => {
+                btn.disabled = false;
+                btn.innerText = "Sign Up";
                 console.error('EmailJS Error:', error);
                 Swal.fire('Error', 'Failed to send OTP email.', 'error');
             });
-
-        console.log("TESTING OTP: " + generatedOtp);
-        
-        Swal.fire('OTP Sent!', 'Check ' + signUpData.email + ' for your 6-digit code.', 'info');
-        document.getElementById('otpModal').style.display = 'flex';
     });
 
     // 3. VERIFY OTP AND CREATE ACCOUNT
@@ -339,7 +394,7 @@
 
         if (userOtp === generatedOtp) {
             btn.disabled = true;
-            btn.innerText = "Verifying...";
+            btn.innerHTML = '<div class="spinner"></div> Creating Account...';
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
                 await updateProfile(userCredential.user, { displayName: signUpData.name });
@@ -365,7 +420,7 @@
         const password = document.getElementById('loginPassword').value;
 
         btn.disabled = true;
-        btn.innerText = "Authenticating...";
+        btn.innerHTML = '<div class="spinner"></div> Authenticating...';
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
@@ -395,12 +450,13 @@
         }
     });
 
+    
     // Google Login
     document.querySelectorAll('.google-trigger').forEach(btn => {
         btn.addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
-                await saveUserToDatabase(result.user);
+                await saveUserToDatabase(result.user, result.user.displayName);
                 Swal.fire({ icon: 'success', title: 'Welcome!', text: 'Success!', timer: 1500, showConfirmButton: false });
             } catch (error) { 
                 if (error.code !== 'auth/cancelled-popup-request') {
@@ -425,13 +481,23 @@
     document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
     document.getElementById('signIn').addEventListener('click', () => container.classList.remove("right-panel-active"));
 </script>
-<div id="otpModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; padding:30px; border-radius:10px; text-align:center; width:320px; font-family: 'Montserrat', sans-serif;">
-        <h3 style="color:#0d47a1;">Verify Your Email</h3>
-        <p style="font-size:14px; color:#546e7a;">Enter the 6-digit code we sent you.</p>
-        <input type="text" id="otpInput" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:5px; margin: 20px 0; border: 1px solid #ddd; padding: 10px; width: 80%;">
+
+<div id="otpModal">
+    <div class="otp-box">
+        <div style="font-size: 50px; color: #0d47a1; margin-bottom: 10px;">
+            <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <h3>Verify Account</h3>
+        <p style="color: #546e7a; font-size: 14px;">
+            Enter the 6-digit code sent to:<br>
+            <b id="displayEmail" style="color: #0d47a1;"></b>
+        </p>
+        <input type="text" id="otpInput" maxlength="6" placeholder="000000">
         <button id="verifyOtpBtn" style="width: 100%;">Verify & Create Account</button>
-        <button onclick="document.getElementById('otpModal').style.display='none'" style="background:none; border:none; color:gray; cursor:pointer; margin-top:15px; font-size:12px; text-transform:uppercase;">Cancel</button>
+        <button onclick="document.getElementById('otpModal').style.display='none'" 
+                style="background:none; border:none; color:#90a4ae; margin-top:20px; cursor:pointer;">
+            Cancel
+        </button>
     </div>
 </div>
 
