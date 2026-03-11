@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
- <style>
+<style>
     @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
     * { box-sizing: border-box; }
 
@@ -19,12 +19,12 @@
         align-items: center;
         flex-direction: column;
         font-family: 'Montserrat', sans-serif;
-        height: 100vh;
+        min-height: 100vh;
         margin: 0;
     }
 
     .brand-logo {
-        margin-bottom: 20px;
+        margin: 20px 0;
         font-size: 2.5rem;
         color: #0d47a1;
         font-weight: 800;
@@ -62,7 +62,7 @@
         align-items: center;
         justify-content: center;
         flex-direction: column;
-        padding: 0 50px;
+        padding: 0 40px;
         height: 100%;
         text-align: center;
     }
@@ -84,27 +84,18 @@
         position: relative;
         overflow: hidden;
         width: 768px;
-        max-width: 100%;
+        max-width: 95vw;
         min-height: 520px; 
     }
 
-    .password-wrapper {
-        position: relative;
-        width: 100%;
-    }
-
-    .toggle-password {
-        position: absolute;
-        right: 15px;
-        top: 20px;
-        cursor: pointer;
-        color: #546e7a;
-    }
+    .password-wrapper { position: relative; width: 100%; }
+    .toggle-password { position: absolute; right: 15px; top: 20px; cursor: pointer; color: #546e7a; }
 
     .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
     .sign-in-container { left: 0; width: 50%; z-index: 2; }
-    .container.right-panel-active .sign-in-container { transform: translateX(100%); }
     .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
+
+    .container.right-panel-active .sign-in-container { transform: translateX(100%); }
     .container.right-panel-active .sign-up-container {
         transform: translateX(100%);
         opacity: 1;
@@ -119,13 +110,8 @@
 
     .overlay-container {
         position: absolute;
-        top: 0;
-        left: 50%;
-        width: 50%;
-        height: 100%;
-        overflow: hidden;
-        transition: transform 0.6s ease-in-out;
-        z-index: 100;
+        top: 0; left: 50%; width: 50%; height: 100%;
+        overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100;
     }
 
     .container.right-panel-active .overlay-container { transform: translateX(-100%); }
@@ -151,9 +137,7 @@
         flex-direction: column;
         padding: 0 40px;
         text-align: center;
-        top: 0;
-        height: 100%;
-        width: 50%;
+        top: 0; height: 100%; width: 50%;
         transition: transform 0.6s ease-in-out;
     }
 
@@ -180,51 +164,23 @@
     .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
     .btn-social i { margin-right: 8px; }
 
-    /* --- ADDED FOR OTP MODAL & SPINNER --- */
-     
-    #otpInput {
-    text-align: center;
-    font-size: 24px;   
-    letter-spacing: 8px; 
-    font-weight: bold;
-    color: #0d47a1;
-    margin: 20px 0;
-    }
-     
-     #otpModal {
-        display: none; 
-        position: fixed; 
-        top: 0; left: 0; 
-        width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.8); 
-        z-index: 9999; 
-        justify-content: center; 
-        align-items: center;
+    /* --- MOBILE RESPONSIVE FIX --- */
+    @media (max-width: 768px) {
+        .overlay-container { display: none; }
+        .form-container { width: 100%; }
+        .container.right-panel-active .sign-in-container { transform: translateX(-100%); opacity: 0; }
+        .container.right-panel-active .sign-up-container { transform: translateX(0); }
+        .mobile-switch { display: block !important; }
     }
 
-    .otp-box {
-        background: white; 
-        padding: 30px; 
-        border-radius: 10px; 
-        text-align: center; 
-        width: 320px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
+    .mobile-switch { display: none; margin-top: 15px; font-size: 13px; }
+    .mobile-switch a { color: #0d47a1; font-weight: bold; text-decoration: none; }
 
-    .spinner {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 8px;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
+    #otpInput { text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: bold; color: #0d47a1; margin: 20px 0; }
+    #otpModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+    .otp-box { background: white; padding: 30px; border-radius: 10px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>
     
 </head>
@@ -239,7 +195,7 @@
                 <div class="social-login-container">
                     <a class="btn-social btn-google google-trigger"><i class="fab fa-google"></i> Gmail</a>
                 </div>
-                <span>or use your email for registration</span>
+                <span>or use your email</span>
                 <input type="text" id="regName" placeholder="Name" required />
                 <input type="email" id="regEmail" placeholder="Email" required />
                 <div class="password-wrapper">
@@ -247,6 +203,9 @@
                     <i class="fas fa-eye toggle-password" data-target="regPassword"></i>
                 </div>
                 <button type="submit" id="signUpBtn">Sign Up</button>
+                <div class="mobile-switch">
+                    Already have an account? <a href="#" id="mobileSignIn">Sign In</a>
+                </div>
             </form>
         </div>
 
@@ -262,8 +221,11 @@
                     <input type="password" id="loginPassword" placeholder="Password" required />
                     <i class="fas fa-eye toggle-password" data-target="loginPassword"></i>
                 </div>
-                <a href="#" id="forgotPass" style="font-size: 12px; color: #546e7a; text-decoration: none; margin-top: 5px;">Forgot your password?</a>
+                <a href="#" id="forgotPass" style="font-size: 12px; color: #546e7a; text-decoration: none; margin-top: 5px;">Forgot password?</a>
                 <button type="submit" id="signInBtn">Sign In</button>
+                <div class="mobile-switch">
+                    Don't have an account? <a href="#" id="mobileSignUp">Sign Up</a>
+                </div>
             </form>
         </div>
 
@@ -271,12 +233,12 @@
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
                     <h1 style="color: white;">Welcome Back!</h1>
-                    <p>To keep connected with StayFind please login with your personal info</p>
+                    <p>To keep connected with StayFind please login</p>
                     <button class="ghost" id="signIn">Sign In</button>
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1 style="color: white;">Hello, Friend!</h1>
-                    <p>Enter your details and start your journey with StayFind today</p>
+                    <p>Enter your details and start your journey with StayFind</p>
                     <button class="ghost" id="signUp">Sign Up</button>
                 </div>
             </div>
@@ -293,8 +255,7 @@
         signInWithEmailAndPassword,
         updateProfile,
         onAuthStateChanged,
-        sendPasswordResetEmail,
-        signOut
+        sendPasswordResetEmail
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -314,15 +275,11 @@
     const googleProvider = new GoogleAuthProvider();
     const container = document.getElementById('container');
 
-    // OTP Variables
     let generatedOtp = null;
     let signUpData = {}; 
 
-    // 1. AUTO-REDIRECT LOGIC
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.location.href = "dashboard.html";
-        }
+        if (user) { window.location.href = "dashboard.html"; }
     });
 
     async function saveUserToDatabase(user, name) {
@@ -338,11 +295,9 @@
         } catch (error) { console.error("DB Error: ", error); }
     }
 
-    // 2. SIGN UP WITH OTP TRIGGER
     document.getElementById('signUpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('signUpBtn');
-        
         signUpData = {
             name: document.getElementById('regName').value,
             email: document.getElementById('regEmail').value,
@@ -353,45 +308,34 @@
             return Swal.fire({ icon: 'warning', title: 'Wait!', text: 'Password must be at least 8 characters.' });
         }
 
-        // --- START LOADING STATE ---
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Sending OTP...';
-
         generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
         
-        // Initialize EmailJS
         emailjs.init("Y7oJ_Er1PJ59eTUfI"); 
-
         const templateParams = {
-            email: signUpData.email,    
-            passcode: generatedOtp,     
-            time: "15 minutes"          
+            email: signUpData.email,
+            passcode: generatedOtp,
+            time: "15 minutes"
         };
 
         emailjs.send('service_3hidsqf', 'template_cegi0tu', templateParams)
             .then(() => {
                 btn.disabled = false;
                 btn.innerText = "Sign Up";
-                
-                // Show modal and set email text
                 document.getElementById('displayEmail').innerText = signUpData.email;
                 document.getElementById('otpModal').style.display = 'flex';
-                
-                console.log("TESTING OTP: " + generatedOtp);
                 Swal.fire('OTP Sent!', 'Check ' + signUpData.email + ' for your code.', 'success');
             }, (error) => {
                 btn.disabled = false;
                 btn.innerText = "Sign Up";
-                console.error('EmailJS Error:', error);
-                Swal.fire('Error', 'Failed to send OTP email.', 'error');
+                Swal.fire('Error', 'Failed to send OTP.', 'error');
             });
     });
 
-    // 3. VERIFY OTP AND CREATE ACCOUNT
     document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
         const userOtp = document.getElementById('otpInput').value;
         const btn = document.getElementById('verifyOtpBtn');
-
         if (userOtp === generatedOtp) {
             btn.disabled = true;
             btn.innerHTML = '<div class="spinner"></div> Creating Account...';
@@ -399,20 +343,18 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
                 await updateProfile(userCredential.user, { displayName: signUpData.name });
                 await saveUserToDatabase(userCredential.user, signUpData.name);
-                
                 document.getElementById('otpModal').style.display = 'none';
-                Swal.fire('Success!', 'Account created successfully.', 'success');
+                Swal.fire('Success!', 'Account created.', 'success');
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = "Verify & Create Account";
                 Swal.fire('Error', error.message, 'error');
             }
         } else {
-            Swal.fire('Invalid Code', 'The OTP you entered is incorrect.', 'error');
+            Swal.fire('Invalid Code', 'The OTP is incorrect.', 'error');
         }
     });
 
-    // 4. SIGN IN 
     document.getElementById('signInForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('signInBtn');
@@ -424,80 +366,55 @@
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            Swal.fire({ icon: 'success', title: 'Success', text: 'Logging you in...', timer: 1500, showConfirmButton: false });
         } catch (error) {
             btn.disabled = false;
             btn.innerText = "Sign In";
-            Swal.fire({ icon: 'error', title: 'Login Error', text: "Invalid email or password." });
+            Swal.fire({ icon: 'error', title: 'Login Error', text: "Invalid credentials." });
         }
     });
 
-    // 5. FORGOT PASSWORD
     document.getElementById('forgotPass').addEventListener('click', async (e) => {
         e.preventDefault();
-        const { value: email } = await Swal.fire({
-            title: 'Reset Password',
-            input: 'email',
-            inputLabel: 'Enter your email address',
-            showCancelButton: true
-        });
-
+        const { value: email } = await Swal.fire({ title: 'Reset Password', input: 'email', showCancelButton: true });
         if (email) {
-            try {
-                await sendPasswordResetEmail(auth, email);
-                Swal.fire('Sent!', 'Check your inbox for instructions.', 'success');
-            } catch (error) { Swal.fire('Error', error.message, 'error'); }
+            try { await sendPasswordResetEmail(auth, email); Swal.fire('Sent!', 'Check inbox.', 'success'); }
+            catch (error) { Swal.fire('Error', error.message, 'error'); }
         }
     });
 
-    
-    // Google Login
     document.querySelectorAll('.google-trigger').forEach(btn => {
         btn.addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 await saveUserToDatabase(result.user, result.user.displayName);
-                Swal.fire({ icon: 'success', title: 'Welcome!', text: 'Success!', timer: 1500, showConfirmButton: false });
-            } catch (error) { 
-                if (error.code !== 'auth/cancelled-popup-request') {
-                    Swal.fire('Google Error', error.message, 'error'); 
-                }
-            }
+            } catch (error) { if (error.code !== 'auth/cancelled-popup-request') Swal.fire('Error', error.message, 'error'); }
         });
     });
 
-    // Password Visibility Toggle
     document.querySelectorAll('.toggle-password').forEach(icon => {
         icon.addEventListener('click', () => {
-            const inputId = icon.getAttribute('data-target');
-            const input = document.getElementById(inputId);
+            const input = document.getElementById(icon.getAttribute('data-target'));
             input.type = input.type === 'password' ? 'text' : 'password';
             icon.classList.toggle('fa-eye');
             icon.classList.toggle('fa-eye-slash');
         });
     });
 
-    // UI Animations
+    // Toggle Animations
     document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
     document.getElementById('signIn').addEventListener('click', () => container.classList.remove("right-panel-active"));
+    document.getElementById('mobileSignUp').addEventListener('click', (e) => { e.preventDefault(); container.classList.add("right-panel-active"); });
+    document.getElementById('mobileSignIn').addEventListener('click', (e) => { e.preventDefault(); container.classList.remove("right-panel-active"); });
 </script>
 
 <div id="otpModal">
     <div class="otp-box">
-        <div style="font-size: 50px; color: #0d47a1; margin-bottom: 10px;">
-            <i class="fas fa-envelope-open-text"></i>
-        </div>
+        <div style="font-size: 50px; color: #0d47a1; margin-bottom: 10px;"><i class="fas fa-envelope-open-text"></i></div>
         <h3>Verify Account</h3>
-        <p style="color: #546e7a; font-size: 14px;">
-            Enter the 6-digit code sent to:<br>
-            <b id="displayEmail" style="color: #0d47a1;"></b>
-        </p>
+        <p style="color: #546e7a; font-size: 14px;">Code sent to:<br><b id="displayEmail"></b></p>
         <input type="text" id="otpInput" maxlength="6" placeholder="000000">
         <button id="verifyOtpBtn" style="width: 100%;">Verify & Create Account</button>
-        <button onclick="document.getElementById('otpModal').style.display='none'" 
-                style="background:none; border:none; color:#90a4ae; margin-top:20px; cursor:pointer;">
-            Cancel
-        </button>
+        <button onclick="document.getElementById('otpModal').style.display='none'" style="background:none; border:none; color:#90a4ae; margin-top:20px; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
