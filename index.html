@@ -1,431 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StayFind - Login & Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayFind - Login & Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+        * { box-sizing: border-box; }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        body {
+            background: #e0f2f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: 'Montserrat', sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
 
-<style>
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+        .brand-logo { margin-bottom: 20px; font-size: 2.5rem; color: #0d47a1; font-weight: 800; }
+        .brand-logo span { color: #42a5f5; }
 
-*{box-sizing:border-box;}
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            width: 768px;
+            max-width: 100%;
+            min-height: 520px; 
+        }
 
-body{
-background:#e0f2f1;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-font-family:'Montserrat',sans-serif;
-height:100vh;
-margin:0;
-}
+        form { background-color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 50px; height: 100%; text-align: center; }
 
-.brand-logo{
-margin-bottom:20px;
-font-size:2.5rem;
-color:#0d47a1;
-font-weight:800;
-}
+        .input-group { position: relative; width: 100%; }
+        .input-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #546e7a;
+            z-index: 10;
+        }
 
-.brand-logo span{color:#42a5f5;}
+        input { background-color: #e3f2fd; border: none; padding: 12px 15px; margin: 8px 0; width: 100%; border-radius: 5px; outline-color: #42a5f5; }
 
-h1{font-weight:bold;margin:0;color:#0d47a1;}
+        #strength-meter {
+            height: 4px;
+            width: 100%;
+            background: #ddd;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+        #strength-bar { height: 100%; width: 0%; transition: 0.3s; }
 
-button{
-border-radius:20px;
-border:1px solid #0d47a1;
-background-color:#0d47a1;
-color:#fff;
-font-size:12px;
-font-weight:bold;
-padding:12px 45px;
-cursor:pointer;
-}
+        button { border-radius: 20px; border: 1px solid #0d47a1; background-color: #0d47a1; color: #FFFFFF; font-size: 12px; font-weight: bold; padding: 12px 45px; text-transform: uppercase; cursor: pointer; margin-top: 10px; transition: transform 80ms ease-in; }
+        button:active { transform: scale(0.95); }
+        button.ghost { background-color: transparent; border-color: #FFFFFF; }
 
-button.ghost{
-background:transparent;
-border-color:#fff;
-}
-
-form{
-background:#fff;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-padding:0 50px;
-height:100%;
-text-align:center;
-}
-
-input{
-background:#e3f2fd;
-border:none;
-padding:12px;
-margin:8px 0;
-width:100%;
-border-radius:5px;
-}
-
-.container{
-background:#fff;
-border-radius:10px;
-box-shadow:0 14px 28px rgba(0,0,0,0.1);
-position:relative;
-overflow:hidden;
-width:768px;
-max-width:100%;
-min-height:520px;
-}
-
-.form-container{
-position:absolute;
-top:0;
-height:100%;
-transition:all .6s ease-in-out;
-}
-
-.sign-in-container{
-left:0;
-width:50%;
-z-index:2;
-}
-
-.sign-up-container{
-left:0;
-width:50%;
-opacity:0;
-z-index:1;
-}
-
-.container.right-panel-active .sign-in-container{
-transform:translateX(100%);
-}
-
-.container.right-panel-active .sign-up-container{
-transform:translateX(100%);
-opacity:1;
-z-index:5;
-}
-
-.overlay-container{
-position:absolute;
-top:0;
-left:50%;
-width:50%;
-height:100%;
-overflow:hidden;
-transition:transform .6s ease-in-out;
-z-index:100;
-}
-
-.container.right-panel-active .overlay-container{
-transform:translateX(-100%);
-}
-
-.overlay{
-background:linear-gradient(to right,#0d47a1,#42a5f5);
-color:#fff;
-position:relative;
-left:-100%;
-height:100%;
-width:200%;
-transition:transform .6s ease-in-out;
-}
-
-.container.right-panel-active .overlay{
-transform:translateX(50%);
-}
-
-.overlay-panel{
-position:absolute;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-padding:0 40px;
-text-align:center;
-top:0;
-height:100%;
-width:50%;
-}
-
-.overlay-right{right:0;}
-
-.social-login-container{
-margin:15px 0;
-display:flex;
-gap:10px;
-}
-
-.btn-social{
-border-radius:5px;
-display:flex;
-align-items:center;
-padding:10px 15px;
-font-size:13px;
-text-decoration:none;
-cursor:pointer;
-}
-
-.btn-fb{
-background:#1877F2;
-color:white;
-}
-
-.btn-google{
-background:white;
-border:1px solid #ddd;
-}
-
-.password-box{
-position:relative;
-width:100%;
-}
-
-.password-box i{
-position:absolute;
-right:10px;
-top:15px;
-cursor:pointer;
-}
-</style>
+        .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
+        .sign-in-container { left: 0; width: 50%; z-index: 2; }
+        .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
+        .container.right-panel-active .sign-in-container { transform: translateX(100%); }
+        .container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; }
+        
+        .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; }
+        .container.right-panel-active .overlay-container { transform: translateX(-100%); }
+        .overlay { background: linear-gradient(to right, #0d47a1, #42a5f5); color: #FFFFFF; position: relative; left: -100%; height: 100%; width: 200%; transform: translateX(0); transition: transform 0.6s ease-in-out; }
+        .container.right-panel-active .overlay { transform: translateX(50%); }
+        .overlay-panel { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 40px; text-align: center; top: 0; height: 100%; width: 50%; transition: transform 0.6s ease-in-out; }
+    </style>
 </head>
-
 <body>
 
-<div class="brand-logo">Stay<span>Find</span></div>
+    <div class="brand-logo">Stay<span>Find</span></div>
 
-<div class="container" id="container">
+    <div class="container" id="container">
+        <div class="form-container sign-up-container">
+            <form id="signUpForm">
+                <h1>Create Account</h1>
+                <span>Join our community today</span>
+                <input type="text" id="regName" placeholder="Name" required />
+                <input type="email" id="regEmail" placeholder="Email" required />
+                <div class="input-group">
+                    <input type="password" id="regPassword" placeholder="Password" required />
+                    <i class="fas fa-eye toggle-pass"></i>
+                </div>
+                <div id="strength-meter"><div id="strength-bar"></div></div>
+                <button type="submit" id="signUpBtn">Sign Up</button>
+            </form>
+        </div>
 
-<!-- REGISTER -->
-<div class="form-container sign-up-container">
-<form id="signUpForm">
+        <div class="form-container sign-in-container">
+            <form id="signInForm">
+                <h1>Sign in</h1>
+                <span>Access your dashboard</span>
+                <input type="email" id="loginEmail" placeholder="Email" required />
+                <div class="input-group">
+                    <input type="password" id="loginPassword" placeholder="Password" required />
+                    <i class="fas fa-eye toggle-pass"></i>
+                </div>
+                <a href="#" id="forgotPass" style="font-size: 12px; color: #546e7a; text-decoration: none; margin-top: 5px;">Forgot your password?</a>
+                <button type="submit" id="signInBtn">Sign In</button>
+            </form>
+        </div>
 
-<h1>Create Account</h1>
-
-<div class="social-login-container">
-<a class="btn-social btn-fb"><i class="fab fa-facebook-f"></i>&nbsp;Facebook</a>
-<a class="btn-social btn-google"><i class="fab fa-google"></i>&nbsp;Google</a>
-</div>
-
-<input type="text" id="regName" placeholder="Name" required>
-<input type="email" id="regEmail" placeholder="Email" required>
-
-<div class="password-box">
-<input type="password" id="regPassword" placeholder="Password" required>
-<i class="fa fa-eye" id="toggleRegPassword"></i>
-</div>
-
-<button type="submit">Sign Up</button>
-
-</form>
-</div>
-
-<!-- LOGIN -->
-<div class="form-container sign-in-container">
-<form id="signInForm">
-
-<h1>Sign in</h1>
-
-<div class="social-login-container">
-<a class="btn-social btn-fb"><i class="fab fa-facebook-f"></i>&nbsp;Facebook</a>
-<a class="btn-social btn-google"><i class="fab fa-google"></i>&nbsp;Google</a>
-</div>
-
-<input type="email" id="loginEmail" placeholder="Email" required>
-
-<div class="password-box">
-<input type="password" id="loginPassword" placeholder="Password" required>
-<i class="fa fa-eye" id="toggleLoginPassword"></i>
-</div>
-
-<a href="#" id="forgotPassword">Forgot password?</a>
-
-<button type="submit">Sign In</button>
-
-</form>
-</div>
-
-<!-- OVERLAY -->
-<div class="overlay-container">
-<div class="overlay">
-
-<div class="overlay-panel overlay-left">
-<h1>Welcome Back!</h1>
-<p>Login to continue using StayFind</p>
-<button class="ghost" id="signIn">Sign In</button>
-</div>
-
-<div class="overlay-panel overlay-right">
-<h1>Hello Friend!</h1>
-<p>Create your StayFind account</p>
-<button class="ghost" id="signUp">Sign Up</button>
-</div>
-
-</div>
-</div>
-
-</div>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1 style="color:white">Welcome Back!</h1>
+                    <button class="ghost" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1 style="color:white">Hello, Friend!</h1>
+                    <button class="ghost" id="signUp">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        updateProfile,
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    // 1. FIREBASE CONFIG
+    const firebaseConfig = {
+        apiKey: "AIzaSyD7v_LWg5_I_Y_m-iUIWa09cade8JTkgHk",
+        authDomain: "stayfind-f7a28.firebaseapp.com",
+        projectId: "stayfind-f7a28",
+        databaseURL: "https://stayfind-f7a28-default-rtdb.asia-southeast1.firebasedatabase.app",
+        storageBucket: "stayfind-f7a28.firebasestorage.app",
+        messagingSenderId: "682175949982",
+        appId: "1:682175949982:web:e05561d627caaf3d5d5f8f"
+    };
 
-import {
-getAuth,
-signInWithPopup,
-GoogleAuthProvider,
-FacebookAuthProvider,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-updateProfile,
-sendPasswordResetEmail,
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    // 2. CHECK LOGIN STATUS
+    onAuthStateChanged(auth, (user) => {
+        if (user) window.location.href = "dashboard.html";
+    });
 
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "stayfind-f7a28.firebaseapp.com",
-projectId: "stayfind-f7a28",
-databaseURL: "https://stayfind-f7a28-default-rtdb.asia-southeast1.firebasedatabase.app",
-storageBucket: "stayfind-f7a28.appspot.com",
-messagingSenderId: "682175949982",
-appId: "1:682175949982:web:e05561d627caaf3d5d5f8f"
-};
+    // 3. EYE TOGGLE LOGIC
+    document.querySelectorAll('.toggle-pass').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const input = icon.parentElement.querySelector('input');
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPassword);
+            icon.classList.toggle('fa-eye-slash', isPassword);
+        });
+    });
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    // 4. STRENGTH METER LOGIC
+    const regPass = document.getElementById('regPassword');
+    const bar = document.getElementById('strength-bar');
+    const meter = document.getElementById('strength-meter');
 
-const googleProvider = new GoogleAuthProvider();
-const fbProvider = new FacebookAuthProvider();
+    regPass.addEventListener('input', () => {
+        const val = regPass.value;
+        meter.style.display = val.length > 0 ? 'block' : 'none';
+        let score = 0;
+        if (val.length > 5) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
 
-async function saveUser(user,name){
+        const colors = ['#ff4d4d', '#ffa64d', '#ffff4d', '#4dff4d'];
+        bar.style.width = (score * 25) + '%';
+        bar.style.backgroundColor = colors[score - 1] || '#ddd';
+    });
 
-await set(ref(db,'users/'+user.uid),{
-uid:user.uid,
-displayName:name || user.displayName,
-email:user.email,
-role:"user",
-lastLogin:new Date().toISOString()
-});
+    // 5. SIGN UP LOGIC
+    document.getElementById('signUpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('signUpBtn');
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const password = regPass.value;
 
-}
+        btn.disabled = true;
+        btn.innerText = "Creating...";
 
-onAuthStateChanged(auth,(user)=>{
-if(user){
-window.location.href="dashboard.html";
-}
-});
+        try {
+            const res = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(res.user, { displayName: name });
+            await set(ref(db, 'users/' + res.user.uid), {
+                uid: res.user.uid,
+                displayName: name,
+                email: email,
+                lastLogin: serverTimestamp()
+            });
+            Swal.fire({ icon: 'success', title: 'Account Created!', showConfirmButton: false, timer: 1500 });
+        } catch (error) {
+            btn.disabled = false;
+            btn.innerText = "Sign Up";
+            Swal.fire('Error', error.message, 'error');
+        }
+    });
 
-document.getElementById("signUpForm").addEventListener("submit",async(e)=>{
+    // 6. SIGN IN LOGIC
+    document.getElementById('signInForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('signInBtn');
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
 
-e.preventDefault();
+        btn.disabled = true;
+        btn.innerText = "Signing in...";
 
-const name=regName.value;
-const email=regEmail.value;
-const pass=regPassword.value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            Swal.fire({ icon: 'success', title: 'Welcome Back!', showConfirmButton: false, timer: 1500 });
+        } catch (error) {
+            btn.disabled = false;
+            btn.innerText = "Sign In";
+            Swal.fire('Login Failed', error.message, 'error');
+        }
+    });
 
-try{
-
-const userCredential=await createUserWithEmailAndPassword(auth,email,pass);
-
-await updateProfile(userCredential.user,{displayName:name});
-
-await saveUser(userCredential.user,name);
-
-alert("Account created!");
-
-window.location.href="dashboard.html";
-
-}catch(err){
-
-alert(err.message);
-
-}
-
-});
-
-document.getElementById("signInForm").addEventListener("submit",async(e)=>{
-
-e.preventDefault();
-
-try{
-
-await signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value);
-
-alert("Welcome back!");
-
-window.location.href="dashboard.html";
-
-}catch(err){
-
-alert(err.message);
-
-}
-
-});
-
-document.querySelectorAll(".btn-google").forEach(btn=>{
-btn.addEventListener("click",async()=>{
-
-const result=await signInWithPopup(auth,googleProvider);
-
-await saveUser(result.user);
-
-window.location.href="dashboard.html";
-
-});
-});
-
-document.querySelectorAll(".btn-fb").forEach(btn=>{
-btn.addEventListener("click",async()=>{
-
-const result=await signInWithPopup(auth,fbProvider);
-
-await saveUser(result.user);
-
-window.location.href="dashboard.html";
-
-});
-});
-
-document.getElementById("forgotPassword").addEventListener("click",async(e)=>{
-
-e.preventDefault();
-
-const email=loginEmail.value;
-
-if(!email) return alert("Enter your email first");
-
-await sendPasswordResetEmail(auth,email);
-
-alert("Password reset email sent!");
-
-});
-
-toggleLoginPassword.onclick=()=>{
-loginPassword.type=loginPassword.type==="password"?"text":"password";
-};
-
-toggleRegPassword.onclick=()=>{
-regPassword.type=regPassword.type==="password"?"text":"password";
-};
-
-const signUpButton=document.getElementById('signUp');
-const signInButton=document.getElementById('signIn');
-const container=document.getElementById('container');
-
-signUpButton.addEventListener('click',()=>container.classList.add("right-panel-active"));
-signInButton.addEventListener('click',()=>container.classList.remove("right-panel-active"));
+    // 7. PANEL ANIMATION
+    const container = document.getElementById('container');
+    document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
+    document.getElementById('signIn').addEventListener('click', () => container.classList.remove("right-panel-active"));
 
 </script>
-
 </body>
 </html>
