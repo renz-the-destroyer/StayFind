@@ -87,6 +87,20 @@
             min-height: 520px; 
         }
 
+        /* Password Wrapper for Eye Icon */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 20px;
+            cursor: pointer;
+            color: #546e7a;
+        }
+
         .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; }
         .sign-in-container { left: 0; width: 50%; z-index: 2; }
         .container.right-panel-active .sign-in-container { transform: translateX(100%); }
@@ -163,7 +177,6 @@
             cursor: pointer;
         }
 
-        .btn-fb { background-color: #1877F2; color: white; border: none; }
         .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
         .btn-social i { margin-right: 8px; }
     </style>
@@ -182,7 +195,10 @@
                 <span>or use your email for registration</span>
                 <input type="text" id="regName" placeholder="Name" required />
                 <input type="email" id="regEmail" placeholder="Email" required />
-                <input type="password" id="regPassword" placeholder="Password (min 6 chars)" required />
+                <div class="password-wrapper">
+                    <input type="password" id="regPassword" placeholder="Password (min 8 chars)" required />
+                    <i class="fas fa-eye toggle-password" data-target="regPassword"></i>
+                </div>
                 <button type="submit" id="signUpBtn">Sign Up</button>
             </form>
         </div>
@@ -195,7 +211,10 @@
                 </div>
                 <span>or use your account</span>
                 <input type="email" id="loginEmail" placeholder="Email" required />
-                <input type="password" id="loginPassword" placeholder="Password" required />
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="Password" required />
+                    <i class="fas fa-eye toggle-password" data-target="loginPassword"></i>
+                </div>
                 <a href="#" id="forgotPass" style="font-size: 12px; color: #546e7a; text-decoration: none; margin-top: 5px;">Forgot your password?</a>
                 <button type="submit" id="signInBtn">Sign In</button>
             </form>
@@ -218,7 +237,6 @@
     </div>
 
 <script type="module">
-    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
         getAuth, 
@@ -228,7 +246,9 @@
         signInWithEmailAndPassword,
         updateProfile,
         onAuthStateChanged,
-        sendPasswordResetEmail
+        sendPasswordResetEmail,
+        sendEmailVerification,
+        signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -248,28 +268,27 @@
     const googleProvider = new GoogleAuthProvider();
     const container = document.getElementById('container');
 
-    // 1. AUTO-REDIRECT LOGIC
+    // 1. AUTO-REDIRECT LOGIC (Gated by verification)
     onAuthStateChanged(auth, (user) => {
-        if (user) {
+        if (user && user.emailVerified) {
             window.location.href = "dashboard.html";
         }
     });
 
     async function saveUserToDatabase(user, name) {
-    try {
-        // Use user.displayName if name isn't passed (important for Google Login)
-        const finalName = name || user.displayName || "New User";
-        await set(ref(db, 'users/' + user.uid), {
-            uid: user.uid,
-            displayName: finalName,
-            email: user.email,
-            role: "user",
-            lastLogin: serverTimestamp()
-        });
-    } catch (error) { console.error("DB Error: ", error); }
-}
+        try {
+            const finalName = name || user.displayName || "New User";
+            await set(ref(db, 'users/' + user.uid), {
+                uid: user.uid,
+                displayName: finalName,
+                email: user.email,
+                role: "user",
+                lastLogin: serverTimestamp()
+            });
+        } catch (error) { console.error("DB Error: ", error); }
+    }
 
-    // 2. SIGN UP WITH LOADING STATE
+    // 2. SIGN UP WITH 8-CHAR VALIDATION & VERIFICATION
     document.getElementById('signUpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('signUpBtn');
@@ -277,15 +296,27 @@
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPassword').value;
 
+        if (password.length < 8) {
+            return Swal.fire({ icon: 'warning', title: 'Wait!', text: 'Password must be at least 8 characters.' });
+        }
+
         btn.disabled = true;
         btn.innerText = "Creating...";
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await sendEmailVerification(userCredential.user);
             await updateProfile(userCredential.user, { displayName: name });
             await saveUserToDatabase(userCredential.user, name);
             
-            Swal.fire({ icon: 'success', title: 'Welcome!', text: 'Account created successfully.', timer: 2000, showConfirmButton: false });
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'Check your email!', 
+                text: 'We sent a verification link to ' + email + '. Please verify to log in.',
+                confirmButtonColor: '#0d47a1'
+            });
+            btn.disabled = false;
+            btn.innerText = "Sign Up";
         } catch (error) {
             btn.disabled = false;
             btn.innerText = "Sign Up";
@@ -293,7 +324,7 @@
         }
     });
 
-    /// 3. SIGN IN WITH LOADING STATE
+    // 3. SIGN IN WITH GATEKEEPER (Email verification check)
     document.getElementById('signInForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('signInBtn');
@@ -304,17 +335,36 @@
         btn.innerText = "Authenticating...";
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                await signOut(auth);
+                btn.disabled = false;
+                btn.innerText = "Sign In";
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Verify Email',
+                    text: 'Click the link in your email before signing in.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Resend Email'
+                }).then(async (res) => {
+                    if (res.isConfirmed) {
+                        // Temp sign in to resend
+                        const tempCred = await signInWithEmailAndPassword(auth, email, password);
+                        await sendEmailVerification(tempCred.user);
+                        await signOut(auth);
+                        Swal.fire('Sent!', 'Verification email resent.', 'success');
+                    }
+                });
+            }
+
             Swal.fire({ icon: 'success', title: 'Success', text: 'Logging you in...', timer: 1500, showConfirmButton: false });
         } catch (error) {
             btn.disabled = false;
             btn.innerText = "Sign In";
             let msg = "Invalid email or password.";
-            
-            // Modern Firebase uses 'invalid-credential' for both
             if(error.code === 'auth/invalid-credential') msg = "The email or password you entered is incorrect.";
-            if(error.code === 'auth/too-many-requests') msg = "Too many failed attempts. Try again later.";
-            
             Swal.fire({ icon: 'error', title: 'Login Error', text: msg });
         }
     });
@@ -326,35 +376,44 @@
             title: 'Reset Password',
             input: 'email',
             inputLabel: 'Enter your email address',
-            inputPlaceholder: 'email@example.com',
             showCancelButton: true
         });
 
         if (email) {
             try {
                 await sendPasswordResetEmail(auth, email);
-                Swal.fire('Sent!', 'Check your inbox for password reset instructions.', 'success');
-            } catch (error) {
-                Swal.fire('Error', error.message, 'error');
-            }
+                Swal.fire('Sent!', 'Check your inbox for instructions.', 'success');
+            } catch (error) { Swal.fire('Error', error.message, 'error'); }
         }
     });
 
     // Google Login
-document.querySelectorAll('.google-trigger').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            // Pass the user object directly; the function above now handles the name better
-            await saveUserToDatabase(result.user);
-            Swal.fire({ icon: 'success', title: 'Success', text: 'Welcome!', timer: 1500, showConfirmButton: false });
-        } catch (error) { 
-            if (error.code !== 'auth/cancelled-popup-request') {
-                Swal.fire('Google Error', error.message, 'error'); 
+    document.querySelectorAll('.google-trigger').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                await saveUserToDatabase(result.user);
+                // Google accounts are verified by default
+                Swal.fire({ icon: 'success', title: 'Welcome!', text: 'Success!', timer: 1500, showConfirmButton: false });
+            } catch (error) { 
+                if (error.code !== 'auth/cancelled-popup-request') {
+                    Swal.fire('Google Error', error.message, 'error'); 
+                }
             }
-        }
+        });
     });
-});
+
+    // Password Visibility Toggle Logic
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const inputId = icon.getAttribute('data-target');
+            const input = document.getElementById(inputId);
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+    });
 
     // UI Animations
     document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
