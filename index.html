@@ -6,6 +6,7 @@
     <title>StayFind - Login & Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
@@ -180,6 +181,7 @@
         .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
         .btn-social i { margin-right: 8px; }
     </style>
+    
 </head>
 <body>
 
@@ -247,7 +249,6 @@
         updateProfile,
         onAuthStateChanged,
         sendPasswordResetEmail,
-        sendEmailVerification,
         signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -268,9 +269,13 @@
     const googleProvider = new GoogleAuthProvider();
     const container = document.getElementById('container');
 
-    // 1. AUTO-REDIRECT LOGIC (Gated by verification)
+    // OTP Variables
+    let generatedOtp = null;
+    let signUpData = {}; 
+
+    // 1. AUTO-REDIRECT LOGIC
     onAuthStateChanged(auth, (user) => {
-        if (user && user.emailVerified) {
+        if (user) {
             window.location.href = "dashboard.html";
         }
     });
@@ -288,43 +293,71 @@
         } catch (error) { console.error("DB Error: ", error); }
     }
 
-    // 2. SIGN UP WITH 8-CHAR VALIDATION & VERIFICATION
+    // 2. SIGN UP WITH OTP TRIGGER
     document.getElementById('signUpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('signUpBtn');
-        const name = document.getElementById('regName').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
+        
+        signUpData = {
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value
+        };
 
-        if (password.length < 8) {
+        if (signUpData.password.length < 8) {
             return Swal.fire({ icon: 'warning', title: 'Wait!', text: 'Password must be at least 8 characters.' });
         }
 
-        btn.disabled = true;
-        btn.innerText = "Creating...";
+        generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // SEND EMAIL VIA EMAILJS
+        emailjs.init("Y7oJ_Er1PJ59eTUfI"); 
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await sendEmailVerification(userCredential.user);
-            await updateProfile(userCredential.user, { displayName: name });
-            await saveUserToDatabase(userCredential.user, name);
-            
-            Swal.fire({ 
-                icon: 'success', 
-                title: 'Check your email!', 
-                text: 'We sent a verification link to ' + email + '. Please verify to log in.',
-                confirmButtonColor: '#0d47a1'
+        const templateParams = {
+            email: signUpData.email,    
+            passcode: generatedOtp,     
+            time: "15 minutes"          
+        };
+
+        emailjs.send('service_3hidsqf', 'template_cegi0tu', templateParams)
+            .then(() => {
+                console.log('OTP sent successfully to ' + signUpData.email);
+            }, (error) => {
+                console.error('EmailJS Error:', error);
+                Swal.fire('Error', 'Failed to send OTP email.', 'error');
             });
-            btn.disabled = false;
-            btn.innerText = "Sign Up";
-        } catch (error) {
-            btn.disabled = false;
-            btn.innerText = "Sign Up";
-            Swal.fire({ icon: 'error', title: 'Registration Failed', text: error.message });
+
+        console.log("TESTING OTP: " + generatedOtp);
+        
+        Swal.fire('OTP Sent!', 'Check ' + signUpData.email + ' for your 6-digit code.', 'info');
+        document.getElementById('otpModal').style.display = 'flex';
+    });
+
+    // 3. VERIFY OTP AND CREATE ACCOUNT
+    document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
+        const userOtp = document.getElementById('otpInput').value;
+        const btn = document.getElementById('verifyOtpBtn');
+
+        if (userOtp === generatedOtp) {
+            btn.disabled = true;
+            btn.innerText = "Verifying...";
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
+                await updateProfile(userCredential.user, { displayName: signUpData.name });
+                await saveUserToDatabase(userCredential.user, signUpData.name);
+                
+                document.getElementById('otpModal').style.display = 'none';
+                Swal.fire('Success!', 'Account created successfully.', 'success');
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerText = "Verify & Create Account";
+                Swal.fire('Error', error.message, 'error');
+            }
+        } else {
+            Swal.fire('Invalid Code', 'The OTP you entered is incorrect.', 'error');
         }
     });
 
-    // 3. SIGN IN WITH GATEKEEPER (Email verification check)
+    // 4. SIGN IN 
     document.getElementById('signInForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('signInBtn');
@@ -335,41 +368,16 @@
         btn.innerText = "Authenticating...";
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            if (!user.emailVerified) {
-                await signOut(auth);
-                btn.disabled = false;
-                btn.innerText = "Sign In";
-                return Swal.fire({
-                    icon: 'warning',
-                    title: 'Verify Email',
-                    text: 'Click the link in your email before signing in.',
-                    showCancelButton: true,
-                    confirmButtonText: 'Resend Email'
-                }).then(async (res) => {
-                    if (res.isConfirmed) {
-                        // Temp sign in to resend
-                        const tempCred = await signInWithEmailAndPassword(auth, email, password);
-                        await sendEmailVerification(tempCred.user);
-                        await signOut(auth);
-                        Swal.fire('Sent!', 'Verification email resent.', 'success');
-                    }
-                });
-            }
-
+            await signInWithEmailAndPassword(auth, email, password);
             Swal.fire({ icon: 'success', title: 'Success', text: 'Logging you in...', timer: 1500, showConfirmButton: false });
         } catch (error) {
             btn.disabled = false;
             btn.innerText = "Sign In";
-            let msg = "Invalid email or password.";
-            if(error.code === 'auth/invalid-credential') msg = "The email or password you entered is incorrect.";
-            Swal.fire({ icon: 'error', title: 'Login Error', text: msg });
+            Swal.fire({ icon: 'error', title: 'Login Error', text: "Invalid email or password." });
         }
     });
 
-    // 4. FORGOT PASSWORD FEATURE
+    // 5. FORGOT PASSWORD
     document.getElementById('forgotPass').addEventListener('click', async (e) => {
         e.preventDefault();
         const { value: email } = await Swal.fire({
@@ -393,7 +401,6 @@
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 await saveUserToDatabase(result.user);
-                // Google accounts are verified by default
                 Swal.fire({ icon: 'success', title: 'Welcome!', text: 'Success!', timer: 1500, showConfirmButton: false });
             } catch (error) { 
                 if (error.code !== 'auth/cancelled-popup-request') {
@@ -403,13 +410,12 @@
         });
     });
 
-    // Password Visibility Toggle Logic
+    // Password Visibility Toggle
     document.querySelectorAll('.toggle-password').forEach(icon => {
         icon.addEventListener('click', () => {
             const inputId = icon.getAttribute('data-target');
             const input = document.getElementById(inputId);
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
+            input.type = input.type === 'password' ? 'text' : 'password';
             icon.classList.toggle('fa-eye');
             icon.classList.toggle('fa-eye-slash');
         });
@@ -419,5 +425,15 @@
     document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
     document.getElementById('signIn').addEventListener('click', () => container.classList.remove("right-panel-active"));
 </script>
+<div id="otpModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; padding:30px; border-radius:10px; text-align:center; width:320px; font-family: 'Montserrat', sans-serif;">
+        <h3 style="color:#0d47a1;">Verify Your Email</h3>
+        <p style="font-size:14px; color:#546e7a;">Enter the 6-digit code we sent you.</p>
+        <input type="text" id="otpInput" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:5px; margin: 20px 0; border: 1px solid #ddd; padding: 10px; width: 80%;">
+        <button id="verifyOtpBtn" style="width: 100%;">Verify & Create Account</button>
+        <button onclick="document.getElementById('otpModal').style.display='none'" style="background:none; border:none; color:gray; cursor:pointer; margin-top:15px; font-size:12px; text-transform:uppercase;">Cancel</button>
+    </div>
+</div>
+
 </body>
 </html>
