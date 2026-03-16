@@ -3,138 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StayFind - Complete Profile</title>
+    <title>StayFind - Complete Your Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
-        * { box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,600,800');
+        
+        :root {
+            --primary: #0d47a1;
+            --secondary: #42a5f5;
+            --bg: #f0f4f8;
+            --text: #37474f;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease-in-out; }
 
         body {
-            background: #e0f2f1;
+            background-color: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: 'Montserrat', sans-serif;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            color: var(--text);
         }
 
-        .dashboard-container {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 14px 28px rgba(0,0,0,0.1);
-            width: 500px;
-            max-width: 100%;
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .dashboard-card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
             padding: 40px;
             text-align: center;
+            margin: 20px;
         }
 
-        .brand-logo {
-            font-size: 2rem;
-            color: #0d47a1;
-            font-weight: 800;
-            margin-bottom: 20px;
-        }
-        .brand-logo span { color: #42a5f5; }
+        .brand { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+        .brand span { color: var(--secondary); }
 
-        h2 { color: #0d47a1; margin-bottom: 10px; }
-        p { font-size: 14px; color: #546e7a; margin-bottom: 30px; }
+        h2 { font-size: 20px; margin-bottom: 20px; color: var(--primary); }
 
-        .form-group { text-align: left; margin-bottom: 15px; }
-        label { font-size: 12px; font-weight: bold; color: #0d47a1; margin-left: 5px; }
-
-        input, select {
-            background-color: #e3f2fd;
-            border: none;
-            padding: 12px 15px;
-            margin-top: 5px;
+        .form-group { text-align: left; margin-bottom: 18px; position: relative; }
+        label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #90a4ae; margin-left: 5px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i { position: absolute; left: 15px; color: var(--secondary); font-size: 14px; }
+        
+        input {
             width: 100%;
-            border-radius: 5px;
-            outline-color: #42a5f5;
-            font-family: inherit;
-        }
-
-        .role-selection {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .role-option {
-            flex: 1;
-            padding: 10px;
+            padding: 12px 15px 12px 40px;
+            background: #f8fbff;
             border: 2px solid #e3f2fd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
+            border-radius: 8px;
+            font-family: inherit;
             font-size: 14px;
-            font-weight: bold;
-            color: #546e7a;
         }
 
-        .role-option.active {
-            border-color: #0d47a1;
-            background-color: #e3f2fd;
-            color: #0d47a1;
-        }
+        input:focus { border-color: var(--secondary); outline: none; background: #fff; }
 
-        button {
-            border-radius: 20px;
-            border: 1px solid #0d47a1;
-            background-color: #0d47a1;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 12px 45px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        .role-container { display: flex; gap: 10px; margin-top: 8px; }
+        .role-box {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 20px;
-            width: 100%;
-            transition: transform 80ms ease-in;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
         }
 
-        button:active { transform: scale(0.95); }
-        .logout-btn { background: none; border: none; color: #90a4ae; text-decoration: underline; font-size: 12px; margin-top: 15px; cursor: pointer; }
+        .role-box i { font-size: 20px; }
+        .role-box.active { border-color: var(--primary); background: #e3f2fd; color: var(--primary); }
+
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+        }
+
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 71, 161, 0.3); }
+        .save-btn:disabled { background: #b0bec5; cursor: not-allowed; }
+
+        .logout-link { display: block; margin-top: 20px; font-size: 12px; color: #90a4ae; text-decoration: none; }
+        .logout-link:hover { color: #f44336; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <div class="brand-logo">Stay<span>Find</span></div>
-        <h2>Welcome!</h2>
-        <p>Please complete your profile to continue.</p>
+    <div id="loader"><i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary)"></i></div>
 
+    <div class="dashboard-card">
+        <div class="brand">Stay<span>Find</span></div>
+        <h2>Setup Your Profile</h2>
+        
         <form id="profileForm">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="fullName" placeholder="Enter your name" required>
-            </div>
-
-            <div class="form-group">
-                <label>Complete Address</label>
-                <input type="text" id="address" placeholder="Bldg, Street, City" required>
-            </div>
-
-            <div class="form-group">
-                <label>Contact Number</label>
-                <input type="tel" id="contact" placeholder="09XXXXXXXXX" required>
-            </div>
-
-            <div class="form-group">
-                <label>I am a:</label>
-                <div class="role-selection">
-                    <div class="role-option" id="optTenant" onclick="setRole('tenant')">Tenant</div>
-                    <div class="role-option" id="optLandlord" onclick="setRole('landlord')">Landlord</div>
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="fullName" placeholder="Juan Dela Cruz" required>
                 </div>
             </div>
 
-            <button type="submit" id="saveBtn">Save Profile</button>
+            <div class="form-group">
+                <label>Current Address</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" id="address" placeholder="City, Province" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-phone"></i>
+                    <input type="tel" id="contact" placeholder="09123456789" pattern="[0-9]{11}" title="Please enter 11-digit mobile number" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Identify as</label>
+                <div class="role-container">
+                    <div class="role-box" id="roleTenant" onclick="selectRole('tenant')">
+                        <i class="fas fa-user-tag"></i>
+                        Tenant
+                    </div>
+                    <div class="role-box" id="roleLandlord" onclick="selectRole('landlord')">
+                        <i class="fas fa-house-user"></i>
+                        Landlord
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn" id="saveBtn">Complete Setup</button>
         </form>
 
-        <button class="logout-btn" id="logoutBtn">Logout</button>
+        <a href="#" class="logout-link" id="logoutBtn">Logout and exit</a>
     </div>
 
 <script type="module">
@@ -142,7 +172,6 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Use your same config here
     const firebaseConfig = {
         apiKey: "AIzaSyD7v_LWg5_I_Y_m-iUIWa09cade8JTkgHk",
         authDomain: "stayfind-f7a28.firebaseapp.com",
@@ -157,81 +186,68 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let currentUid = null;
-    let selectedRole = null;
+    let userUID = null;
+    let userRole = null;
 
-    // Check if user is logged in
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            currentUid = user.uid;
-            // Pre-fill name if available from Google/Registration
-            if (user.displayName) document.getElementById('fullName').value = user.displayName;
+            userUID = user.uid;
+            const snapshot = await get(ref(db, `users/${user.uid}`));
             
-            // Check if profile is already complete
-            const snapshot = await get(ref(db, 'users/' + user.uid));
             if (snapshot.exists() && snapshot.val().profileComplete) {
-                // If already complete, you could redirect to a main page
-                // window.location.href = "main_feed.html";
-                console.log("Profile already complete");
+                window.location.href = "home.html";
+            } else {
+                if (user.displayName) document.getElementById('fullName').value = user.displayName;
+                document.getElementById('loader').style.display = 'none'; // Hide loader
             }
         } else {
-            window.location.href = "index.html"; // Redirect to login if not authenticated
+            window.location.href = "index.html";
         }
     });
 
-    // Role Selection Logic
-    window.setRole = (role) => {
-        selectedRole = role;
-        document.getElementById('optTenant').classList.remove('active');
-        document.getElementById('optLandlord').classList.remove('active');
-        document.getElementById('opt' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('active');
+    window.selectRole = (role) => {
+        userRole = role;
+        document.getElementById('roleTenant').classList.remove('active');
+        document.getElementById('roleLandlord').classList.remove('active');
+        document.getElementById('role' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('active');
     };
 
-    // Save Profile Logic
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        if (!selectedRole) {
-            return Swal.fire('Wait!', 'Please select if you are a Tenant or Landlord.', 'warning');
-        }
+        if (!userRole) return Swal.fire('Error', 'Please select a role (Tenant or Landlord)', 'error');
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
-        btn.innerText = "Saving...";
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
         try {
-            await update(ref(db, 'users/' + currentUid), {
+            await update(ref(db, `users/${userUID}`), {
                 displayName: document.getElementById('fullName').value,
                 address: document.getElementById('address').value,
                 contact: document.getElementById('contact').value,
-                userType: selectedRole,
+                userType: userRole,
                 profileComplete: true,
-                updatedAt: new Date().toISOString()
+                setupTimestamp: Date.now()
             });
 
             Swal.fire({
                 icon: 'success',
-                title: 'Profile Updated!',
-                text: 'Your account is now ready.',
-                confirmButtonColor: '#0d47a1'
+                title: 'Welcome to StayFind!',
+                text: 'Redirecting to your feed...',
+                timer: 2000,
+                showConfirmButton: false
             }).then(() => {
-                // Redirect to your actual app home/feed
-                // window.location.href = "home.html";
+                window.location.href = "home.html";
             });
 
-        } catch (error) {
-            Swal.fire('Error', error.message, 'error');
-        } finally {
+        } catch (err) {
             btn.disabled = false;
-            btn.innerText = "Save Profile";
+            btn.innerText = "Complete Setup";
+            Swal.fire('Error', 'Update failed: ' + err.message, 'error');
         }
     });
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        signOut(auth).then(() => window.location.href = "index.html");
-    });
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
 </script>
-
 </body>
 </html>
