@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StayFind - Discover Your Next Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700');
         * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
@@ -36,8 +38,8 @@
         .badge-tenant { background: #e8f5e9; color: #2e7d32; }
 
         /* --- MODAL BASE STYLES --- */
-        #settingsModal, #postModal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+        #settingsModal, #postModal, #detailViewModal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
             z-index: 2000; justify-content: center; align-items: center; padding: 20px;
         }
         .modal-content {
@@ -45,10 +47,17 @@
             border-radius: 15px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             max-height: 90vh; overflow-y: auto;
         }
-        .close-modal { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #90a4ae; font-size: 20px; }
+        .close-modal { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #90a4ae; font-size: 20px; z-index: 10; }
         .modal-field { margin-bottom: 12px; }
         .modal-field label { display: block; font-size: 11px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
         .modal-field input, .modal-field select, .modal-field textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+
+        /* --- DETAIL VIEW SPECIFIC --- */
+        .detail-content { max-width: 800px; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .swiper { width: 100%; height: 350px; background: #000; }
+        .swiper-slide img { width: 100%; height: 100%; object-fit: contain; }
+        .detail-body { padding: 25px; }
+        .landlord-info-box { background: #f0f4f8; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid #42a5f5; }
 
         /* --- SWEETALERT OVERRIDE --- */
         .swal2-container { z-index: 10000 !important; }
@@ -59,14 +68,13 @@
         .filter-group label { display: block; font-size: 12px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
         
         .container { padding: 30px 5%; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .listing-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
+        .listing-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; cursor: pointer; }
         .listing-card:hover { transform: translateY(-5px); }
         .listing-img { width: 100%; height: 200px; background: #eee; object-fit: cover; }
         .listing-info { padding: 15px; }
         .price { color: #0d47a1; font-size: 1.2rem; font-weight: 800; }
         .listing-tag { position: absolute; top: 10px; left: 10px; background: #0d47a1; color: white; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; z-index: 5; }
         
-        /* Edit/Delete Float Buttons */
         .admin-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 20; }
         .ctrl-btn { background: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
         .ctrl-btn:hover { transform: scale(1.1); }
@@ -75,7 +83,7 @@
 
         .location { font-size: 13px; color: #546e7a; margin: 5px 0; }
         .details { display: flex; gap: 10px; font-size: 11px; color: #78909c; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px; }
-        .contact-btn { display: block; text-align: center; background: #4caf50; color: white; text-decoration: none; padding: 8px; border-radius: 5px; margin-top: 10px; font-size: 12px; font-weight: bold; }
+        .contact-btn { display: block; text-align: center; background: #4caf50; color: white; text-decoration: none; padding: 8px; border-radius: 5px; margin-top: 10px; font-size: 12px; font-weight: bold; position: relative; z-index: 10; }
 
         .bookmark { 
             position: absolute; top: 15px; right: 15px; 
@@ -108,6 +116,33 @@
         <span id="roleBadge" class="badge">Checking...</span>
     </div>
 
+    <div id="detailViewModal">
+        <div class="modal-content detail-content">
+            <i class="fas fa-times close-modal" id="closeDetail"></i>
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper" id="detailSlider">
+                    </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+            <div class="detail-body">
+                <h2 id="dTitle" style="margin:0; color:#0d47a1;"></h2>
+                <div id="dPrice" class="price" style="margin: 10px 0;"></div>
+                <div id="dLoc" class="location"></div>
+                <p id="dAmenities" style="font-size: 13px; color: #546e7a;"></p>
+                <div class="details" id="dSpecs"></div>
+                
+                <div class="landlord-info-box">
+                    <h4 style="margin:0 0 10px 0;">Landlord Contact</h4>
+                    <p style="margin:2px 0; font-size:13px;"><i class="fas fa-user"></i> <span id="dOwner"></span></p>
+                    <p style="margin:2px 0; font-size:13px;"><i class="fas fa-phone"></i> <span id="dPhone"></span></p>
+                    <a href="" id="dCallBtn" class="contact-btn" style="margin-top:15px;">Call Landlord Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="settingsModal">
         <div class="modal-content">
             <i class="fas fa-times close-modal" id="closeSettings"></i>
@@ -132,7 +167,9 @@
             <i class="fas fa-times close-modal" id="closePost"></i>
             <h2 id="modalTitle" style="color:#0d47a1; margin-top:0;">Post Property</h2>
             <input type="hidden" id="editId">
-            <input type="hidden" id="existingImg"> <div class="modal-field">
+            <div id="existingImagesHidden" style="display:none;"></div> 
+
+            <div class="modal-field">
                 <label>Property Title</label>
                 <input type="text" id="pTitle" placeholder="e.g. Cozy Studio Apartment">
             </div>
@@ -161,9 +198,9 @@
             <div class="modal-field"><label>Amenities</label><input type="text" id="pAmenities" placeholder="WiFi, Aircon, Kitchen, etc."></div>
             
             <div class="modal-field">
-                <label>Property Photo (Upload Image)</label>
-                <input type="file" id="pImgFile" accept="image/*" style="padding: 5px;">
-                <small style="color:#78909c; font-size:10px;">Leave blank when editing to keep current photo.</small>
+                <label>Property Photos (Select 3-5 images)</label>
+                <input type="file" id="pImgFiles" accept="image/*" multiple style="padding: 5px;">
+                <small style="color:#78909c; font-size:10px;">Hold Ctrl to select multiple. First image is the thumbnail.</small>
             </div>
             
             <button id="submitPost" style="width:100%; padding:12px; background:#42a5f5; color:white; border:none; border-radius:25px; font-weight:bold; cursor:pointer;">Publish Now</button>
@@ -213,6 +250,7 @@
 
     let currentUserData = null;
     let allListings = [];
+    let swiper = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; } 
@@ -243,6 +281,7 @@
 
     const sModal = document.getElementById('settingsModal');
     const pModal = document.getElementById('postModal');
+    const dModal = document.getElementById('detailViewModal');
 
     document.getElementById('settingsBtn').onclick = () => {
         document.getElementById('editName').value = currentUserData.displayName || "";
@@ -255,28 +294,25 @@
     document.getElementById('postBtn').onclick = () => {
         document.getElementById('modalTitle').innerText = "Post Property";
         document.getElementById('editId').value = "";
-        document.getElementById('existingImg').value = "";
-        
+        document.getElementById('existingImagesHidden').innerHTML = "";
         document.getElementById('pTitle').value = "";
         document.getElementById('pPrice').value = "";
         document.getElementById('pRooms').value = "";
         document.getElementById('pLoc').value = "";
         document.getElementById('pSize').value = "";
         document.getElementById('pAmenities').value = "";
-        document.getElementById('pImgFile').value = ""; 
-        
+        document.getElementById('pImgFiles').value = ""; 
         pModal.style.display = 'flex';
     };
     
     document.getElementById('closeSettings').onclick = () => sModal.style.display = 'none';
     document.getElementById('closePost').onclick = () => pModal.style.display = 'none';
+    document.getElementById('closeDetail').onclick = () => dModal.style.display = 'none';
 
-    // --- UPDATED SETTINGS LOGIC (With Reload) ---
     document.getElementById('saveSettingsBtn').onclick = async () => {
         const uid = auth.currentUser.uid;
         const now = Date.now();
         const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-
         const newName = document.getElementById('editName').value;
         const newAddress = document.getElementById('editAddress').value;
         const newContact = document.getElementById('editContact').value;
@@ -301,13 +337,12 @@
             await update(ref(db, 'users/' + uid), updates);
             sModal.style.display = 'none';
             await Swal.fire({ target: 'body', icon: 'success', title: 'Profile Updated!', text: 'Reloading app...', timer: 1500, showConfirmButton: false });
-            window.location.reload(); // AUTO RELOAD PAGE
+            window.location.reload();
         } catch (err) {
             Swal.fire({ target: 'body', icon: 'error', title: 'Error', text: err.message });
         }
     };
 
-    // Helper function to convert Image to Base64 string
     const getBase64 = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -317,7 +352,7 @@
         });
     };
 
-    // --- UPDATED SUBMIT POST (With File Upload Logic) ---
+    // --- SUBMIT POST WITH MULTIPLE IMAGES ---
     document.getElementById('submitPost').onclick = async () => {
         const id = document.getElementById('editId').value;
         const title = document.getElementById('pTitle').value;
@@ -328,33 +363,28 @@
         const size = document.getElementById('pSize').value;
         const amenities = document.getElementById('pAmenities').value;
         
-        const imgFile = document.getElementById('pImgFile').files[0];
-        let finalImageUrl = document.getElementById('existingImg').value || 'https://via.placeholder.com/400x200';
+        const imgFiles = document.getElementById('pImgFiles').files;
+        let finalImages = JSON.parse(document.getElementById('existingImagesHidden').getAttribute('data-imgs') || '[]');
 
         if(!title || !price || !loc) return Swal.fire({ target: 'body', icon: 'error', text: 'Please fill in Title, Price, and Location' });
 
-        // If a new file was uploaded, convert it to Base64
-        if (imgFile) {
-            try {
-                finalImageUrl = await getBase64(imgFile);
-            } catch (e) {
-                return Swal.fire({ target: 'body', icon: 'error', text: 'Failed to process image.' });
+        if (imgFiles.length > 0) {
+            Swal.fire({ title: 'Processing Images...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            finalImages = [];
+            const maxFiles = Math.min(imgFiles.length, 5);
+            for (let i = 0; i < maxFiles; i++) {
+                finalImages.push(await getBase64(imgFiles[i]));
             }
         }
 
+        if (finalImages.length === 0) finalImages = ['https://via.placeholder.com/400x200'];
+
         const postData = {
-            title, 
-            category,
-            rooms: rooms || "N/A",
-            price: Number(price), 
-            location: loc, 
-            size: size || "N/A", 
-            amenities: amenities || "None", 
-            imageUrl: finalImageUrl, 
-            landlordId: auth.currentUser.uid,
-            landlordName: currentUserData.displayName,
-            landlordContact: currentUserData.contact,
-            rating: "New"
+            title, category, rooms: rooms || "N/A", price: Number(price), 
+            location: loc, size: size || "N/A", amenities: amenities || "None", 
+            images: finalImages, imageUrl: finalImages[0], // Keep legacy imageUrl for thumbnail
+            landlordId: auth.currentUser.uid, landlordName: currentUserData.displayName,
+            landlordContact: currentUserData.contact, rating: "New"
         };
 
         try {
@@ -380,6 +410,39 @@
         });
     }
 
+    // --- ZOOM TO DETAIL ---
+    window.zoomListing = (id) => {
+        const item = allListings.find(l => l.id === id);
+        if (!item) return;
+
+        document.getElementById('dTitle').innerText = item.title;
+        document.getElementById('dPrice').innerHTML = `₱${item.price.toLocaleString()} <span style="font-size:12px;">${item.category === 'Sale' ? '' : '/mo'}</span>`;
+        document.getElementById('dLoc').innerText = item.location;
+        document.getElementById('dAmenities').innerText = "Amenities: " + item.amenities;
+        document.getElementById('dSpecs').innerHTML = `
+            <span><i class="fas fa-bed"></i> ${item.rooms} Rooms</span>
+            <span><i class="fas fa-expand"></i> ${item.size} sqm</span>
+        `;
+        document.getElementById('dOwner').innerText = item.landlordName;
+        document.getElementById('dPhone').innerText = item.landlordContact;
+        document.getElementById('dCallBtn').href = "tel:" + item.landlordContact;
+
+        const slider = document.getElementById('detailSlider');
+        slider.innerHTML = "";
+        const imgs = item.images || [item.imageUrl];
+        imgs.forEach(url => {
+            slider.innerHTML += `<div class="swiper-slide"><img src="${url}"></div>`;
+        });
+
+        dModal.style.display = 'flex';
+        
+        if (swiper) swiper.destroy();
+        swiper = new Swiper(".mySwiper", {
+            pagination: { el: ".swiper-pagination", clickable: true },
+            navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+        });
+    };
+
     function displayFiltered() {
         const grid = document.getElementById('listingsGrid');
         const locSearch = document.getElementById('searchLoc').value.toLowerCase();
@@ -397,35 +460,25 @@
             const canManage = currentUserData.userType === 'landlord' && auth.currentUser.uid === data.landlordId;
 
             grid.innerHTML += `
-                <div class="listing-card">
+                <div class="listing-card" onclick="zoomListing('${data.id}')">
                     <div class="listing-tag">${data.category}</div>
-                    
                     ${!canManage ? '<i class="fas fa-heart bookmark"></i>' : ''}
-                    
                     ${canManage ? `
                         <div class="admin-controls">
-                            <button class="ctrl-btn btn-edit" onclick="editPost('${data.id}')"><i class="fas fa-edit"></i></button>
-                            <button class="ctrl-btn btn-delete" onclick="deletePost('${data.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="ctrl-btn btn-edit" onclick="event.stopPropagation(); editPost('${data.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="ctrl-btn btn-delete" onclick="event.stopPropagation(); deletePost('${data.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     ` : ''}
-
                     <img src="${data.imageUrl}" class="listing-img" onerror="this.src='https://via.placeholder.com/400x200'">
                     <div class="listing-info">
-                        <div class="price">₱${data.price.toLocaleString()} <span style="font-size:10px; color:#78909c;">${data.category === 'Sale' ? '' : '/mo'}</span></div>
+                        <div class="price">₱${data.price.toLocaleString()}</div>
                         <div style="font-weight:bold; margin-top:5px; color:#333;">${data.title}</div>
                         <div class="location"><i class="fas fa-map-marker-alt"></i> ${data.location}</div>
-                        
                         <div class="details">
                             <span><i class="fas fa-bed"></i> ${data.rooms} Rms</span>
-                            <span><i class="fas fa-expand"></i> ${data.size} sqm</span>
                             <span><i class="fas fa-star" style="color:#fbc02d"></i> ${data.rating}</span>
                         </div>
-
-                        <div style="font-size:10px; color:#90a4ae; margin-top:8px;">
-                            <i class="fas fa-check-circle"></i> Amenities: ${data.amenities}
-                        </div>
-
-                        <a href="tel:${data.landlordContact}" class="contact-btn">
+                        <a href="tel:${data.landlordContact}" class="contact-btn" onclick="event.stopPropagation();">
                             <i class="fas fa-phone"></i> Contact Landlord
                         </a>
                     </div>
@@ -434,25 +487,15 @@
     }
 
     window.deletePost = async (id) => {
-        if (currentUserData.userType !== 'landlord') return;
-        const res = await Swal.fire({ 
-            title: 'Are you sure?', 
-            text: "This listing will be permanently removed.", 
-            icon: 'warning', 
-            showCancelButton: true,
-            confirmButtonColor: '#d33'
-        });
+        const res = await Swal.fire({ title: 'Are you sure?', text: "Removed permanently.", icon: 'warning', showCancelButton: true });
         if (res.isConfirmed) await remove(ref(db, 'listings/' + id));
     };
 
     window.editPost = (id) => {
-        if (currentUserData.userType !== 'landlord') return;
-        
         const item = allListings.find(l => l.id === id);
         document.getElementById('modalTitle').innerText = "Edit Property";
         document.getElementById('editId').value = id;
-        document.getElementById('existingImg').value = item.imageUrl;
-        
+        document.getElementById('existingImagesHidden').setAttribute('data-imgs', JSON.stringify(item.images || [item.imageUrl]));
         document.getElementById('pTitle').value = item.title;
         document.getElementById('pCategory').value = item.category;
         document.getElementById('pPrice').value = item.price;
@@ -460,14 +503,11 @@
         document.getElementById('pRooms').value = item.rooms === "N/A" ? "" : item.rooms;
         document.getElementById('pSize').value = item.size === "N/A" ? "" : item.size;
         document.getElementById('pAmenities').value = item.amenities === "None" ? "" : item.amenities;
-        document.getElementById('pImgFile').value = ""; 
-        
         pModal.style.display = 'flex';
     };
 
     document.getElementById('searchLoc').oninput = displayFiltered;
     document.getElementById('priceFilter').onchange = displayFiltered;
-    
     document.getElementById('logoutLink').onclick = (e) => {
         e.preventDefault(); signOut(auth).then(() => window.location.href = "index.html");
     };
