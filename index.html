@@ -23,6 +23,11 @@
         margin: 0;
     }
 
+    /* --- FIX: Force SweetAlert to the very front --- */
+    .swal2-container {
+        z-index: 15000 !important;
+    }
+
     .brand-logo {
         margin: 20px 0;
         font-size: 2.5rem;
@@ -164,7 +169,6 @@
     .btn-google { background-color: #fff; color: #757575; border: 1px solid #ddd; }
     .btn-social i { margin-right: 8px; }
 
-    /* --- MOBILE RESPONSIVE FIX --- */
     @media (max-width: 768px) {
         .overlay-container { display: none; }
         .form-container { width: 100%; }
@@ -177,7 +181,20 @@
     .mobile-switch a { color: #0d47a1; font-weight: bold; text-decoration: none; }
 
     #otpInput { text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: bold; color: #0d47a1; margin: 20px 0; }
-    #otpModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+    
+    /* --- FIX: Higher Z-Index and Ensure it covers everything --- */
+    #otpModal { 
+        display: none; 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.8); 
+        z-index: 10001; 
+        justify-content: center; 
+        align-items: center; 
+    }
     .otp-box { background: white; padding: 30px; border-radius: 10px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -245,6 +262,17 @@
         </div>
     </div>
 
+    <div id="otpModal">
+        <div class="otp-box">
+            <div style="font-size: 50px; color: #0d47a1; margin-bottom: 10px;"><i class="fas fa-envelope-open-text"></i></div>
+            <h3>Verify Account</h3>
+            <p style="color: #546e7a; font-size: 14px;">Code sent to:<br><b id="displayEmail"></b></p>
+            <input type="text" id="otpInput" maxlength="6" placeholder="000000">
+            <button id="verifyOtpBtn" style="width: 100%;">Verify & Create Account</button>
+            <button type="button" onclick="document.getElementById('otpModal').style.display='none'" style="background:none; border:none; color:#90a4ae; margin-top:20px; cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -290,6 +318,7 @@
                 displayName: finalName,
                 email: user.email,
                 role: "user",
+                profileComplete: true, // Ensuring this matches your main page check
                 lastLogin: serverTimestamp()
             });
         } catch (error) { console.error("DB Error: ", error); }
@@ -400,23 +429,11 @@
         });
     });
 
-    // Toggle Animations
     document.getElementById('signUp').addEventListener('click', () => container.classList.add("right-panel-active"));
     document.getElementById('signIn').addEventListener('click', () => container.classList.remove("right-panel-active"));
     document.getElementById('mobileSignUp').addEventListener('click', (e) => { e.preventDefault(); container.classList.add("right-panel-active"); });
     document.getElementById('mobileSignIn').addEventListener('click', (e) => { e.preventDefault(); container.classList.remove("right-panel-active"); });
 </script>
-
-<div id="otpModal">
-    <div class="otp-box">
-        <div style="font-size: 50px; color: #0d47a1; margin-bottom: 10px;"><i class="fas fa-envelope-open-text"></i></div>
-        <h3>Verify Account</h3>
-        <p style="color: #546e7a; font-size: 14px;">Code sent to:<br><b id="displayEmail"></b></p>
-        <input type="text" id="otpInput" maxlength="6" placeholder="000000">
-        <button id="verifyOtpBtn" style="width: 100%;">Verify & Create Account</button>
-        <button onclick="document.getElementById('otpModal').style.display='none'" style="background:none; border:none; color:#90a4ae; margin-top:20px; cursor:pointer;">Cancel</button>
-    </div>
-</div>
 
 </body>
 </html>
