@@ -49,10 +49,12 @@
         .modal-field label { display: block; font-size: 11px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
         .modal-field input, .modal-field select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
 
-        /* --- SEARCH & LISTINGS (Keep original styles) --- */
+        /* --- SEARCH & LISTINGS --- */
         .filter-section { background: white; padding: 20px 5%; display: flex; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #ddd; }
         .filter-group { flex: 1; min-width: 200px; }
         .filter-group label { display: block; font-size: 12px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline-color: #42a5f5; }
+        
         .container { padding: 30px 5%; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .listing-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; cursor: pointer; }
         .listing-card:hover { transform: translateY(-5px); }
@@ -60,8 +62,20 @@
         .listing-info { padding: 15px; }
         .price { color: #0d47a1; font-size: 1.2rem; font-weight: 800; }
         
+        /* NEW FEATURE STYLES */
+        .location { font-size: 13px; color: #546e7a; margin: 5px 0; }
+        .details { display: flex; gap: 10px; font-size: 12px; color: #78909c; margin-top: 10px; }
+        .bookmark { 
+            position: absolute; top: 15px; right: 15px; 
+            background: rgba(255,255,255,0.9); padding: 8px; 
+            border-radius: 50%; cursor: pointer; color: #ccc; 
+            transition: 0.3s; z-index: 10;
+        }
+        .bookmark:hover { color: #f44336; transform: scale(1.1); }
+        
         @media (max-width: 768px) {
             .nav-links a:not(.btn-post):not(#settingsBtn) { display: none; }
+            .filter-group { min-width: 100%; }
         }
     </style>
 </head>
@@ -217,7 +231,6 @@
             modal.style.display = 'none';
             Swal.fire({ icon: 'success', title: 'Profile Updated', showConfirmButton: false, timer: 1500 });
             
-            // Local update so UI changes without refresh
             currentUserData = {...currentUserData, ...updates};
             updateUIByRole(currentUserData);
         } catch (err) {
@@ -233,15 +246,21 @@
                 return;
             }
             grid.innerHTML = "";
-            snapshot.forEach((child) => {
-                const data = child.val();
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
                 grid.innerHTML += `
                     <div class="listing-card">
+                        <i class="fas fa-heart bookmark"></i>
                         <img src="${data.imageUrl || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500'}" class="listing-img">
                         <div class="listing-info">
                             <div class="price">₱${Number(data.price).toLocaleString()} /mo</div>
-                            <div style="font-weight:bold; margin-top:5px;">${data.title || 'Property'}</div>
+                            <div style="font-weight:bold; margin-top:5px; color:#333;">${data.title || 'Cozy Stay'}</div>
                             <div class="location"><i class="fas fa-map-marker-alt"></i> ${data.location}</div>
+                            <div class="details">
+                                <span><i class="fas fa-expand"></i> ${data.size || '--'} sqm</span>
+                                <span><i class="fas fa-bed"></i> ${data.rooms || '1'} Room</span>
+                                <span><i class="fas fa-star" style="color:#fbc02d"></i> ${data.rating || 'New'}</span>
+                            </div>
                         </div>
                     </div>`;
             });
