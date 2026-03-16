@@ -123,7 +123,7 @@
                     <option value="landlord">Landlord</option>
                 </select>
             </div>
-            <button id="saveSettingsBtn" style="width:100%; padding:12px; background:#0d47a1; color:white; border:none; border-radius:25px; font-weight:bold; cursor:pointer;">Save Changes</button>
+            <button id="saveSettingsBtn" style="width:100%; padding:12px; background:#0d47a1; color:white; border:none; border-radius:25px; font-weight:bold; cursor:pointer;">Save Changes & Reload</button>
         </div>
     </div>
 
@@ -132,8 +132,7 @@
             <i class="fas fa-times close-modal" id="closePost"></i>
             <h2 id="modalTitle" style="color:#0d47a1; margin-top:0;">Post Property</h2>
             <input type="hidden" id="editId">
-            
-            <div class="modal-field">
+            <input type="hidden" id="existingImg"> <div class="modal-field">
                 <label>Property Title</label>
                 <input type="text" id="pTitle" placeholder="e.g. Cozy Studio Apartment">
             </div>
@@ -160,7 +159,12 @@
 
             <div class="modal-field"><label>Location</label><input type="text" id="pLoc" placeholder="City, Area"></div>
             <div class="modal-field"><label>Amenities</label><input type="text" id="pAmenities" placeholder="WiFi, Aircon, Kitchen, etc."></div>
-            <div class="modal-field"><label>Image URL</label><input type="text" id="pImg" placeholder="Paste image link here"></div>
+            
+            <div class="modal-field">
+                <label>Property Photo (Upload Image)</label>
+                <input type="file" id="pImgFile" accept="image/*" style="padding: 5px;">
+                <small style="color:#78909c; font-size:10px;">Leave blank when editing to keep current photo.</small>
+            </div>
             
             <button id="submitPost" style="width:100%; padding:12px; background:#42a5f5; color:white; border:none; border-radius:25px; font-weight:bold; cursor:pointer;">Publish Now</button>
         </div>
@@ -251,15 +255,15 @@
     document.getElementById('postBtn').onclick = () => {
         document.getElementById('modalTitle').innerText = "Post Property";
         document.getElementById('editId').value = "";
+        document.getElementById('existingImg').value = "";
         
-        // Clear inputs
         document.getElementById('pTitle').value = "";
         document.getElementById('pPrice').value = "";
         document.getElementById('pRooms').value = "";
         document.getElementById('pLoc').value = "";
         document.getElementById('pSize').value = "";
         document.getElementById('pAmenities').value = "";
-        document.getElementById('pImg').value = "";
+        document.getElementById('pImgFile').value = ""; 
         
         pModal.style.display = 'flex';
     };
@@ -267,7 +271,7 @@
     document.getElementById('closeSettings').onclick = () => sModal.style.display = 'none';
     document.getElementById('closePost').onclick = () => pModal.style.display = 'none';
 
-    // --- SETTINGS LOGIC ---
+    // --- UPDATED SETTINGS LOGIC (With Reload) ---
     document.getElementById('saveSettingsBtn').onclick = async () => {
         const uid = auth.currentUser.uid;
         const now = Date.now();
@@ -296,15 +300,24 @@
         try {
             await update(ref(db, 'users/' + uid), updates);
             sModal.style.display = 'none';
-            Swal.fire({ target: 'body', icon: 'success', title: 'Profile Updated', timer: 1500 });
-            currentUserData = {...currentUserData, ...updates};
-            updateUIByRole(currentUserData);
+            await Swal.fire({ target: 'body', icon: 'success', title: 'Profile Updated!', text: 'Reloading app...', timer: 1500, showConfirmButton: false });
+            window.location.reload(); // AUTO RELOAD PAGE
         } catch (err) {
             Swal.fire({ target: 'body', icon: 'error', title: 'Error', text: err.message });
         }
     };
 
-    // --- SUBMIT / UPDATE POST LOGIC ---
+    // Helper function to convert Image to Base64 string
+    const getBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    // --- UPDATED SUBMIT POST (With File Upload Logic) ---
     document.getElementById('submitPost').onclick = async () => {
         const id = document.getElementById('editId').value;
         const title = document.getElementById('pTitle').value;
@@ -314,9 +327,20 @@
         const loc = document.getElementById('pLoc').value;
         const size = document.getElementById('pSize').value;
         const amenities = document.getElementById('pAmenities').value;
-        const img = document.getElementById('pImg').value;
+        
+        const imgFile = document.getElementById('pImgFile').files[0];
+        let finalImageUrl = document.getElementById('existingImg').value || 'https://via.placeholder.com/400x200';
 
         if(!title || !price || !loc) return Swal.fire({ target: 'body', icon: 'error', text: 'Please fill in Title, Price, and Location' });
+
+        // If a new file was uploaded, convert it to Base64
+        if (imgFile) {
+            try {
+                finalImageUrl = await getBase64(imgFile);
+            } catch (e) {
+                return Swal.fire({ target: 'body', icon: 'error', text: 'Failed to process image.' });
+            }
+        }
 
         const postData = {
             title, 
@@ -326,7 +350,7 @@
             location: loc, 
             size: size || "N/A", 
             amenities: amenities || "None", 
-            imageUrl: img || 'https://via.placeholder.com/400x200', 
+            imageUrl: finalImageUrl, 
             landlordId: auth.currentUser.uid,
             landlordName: currentUserData.displayName,
             landlordContact: currentUserData.contact,
@@ -356,7 +380,6 @@
         });
     }
 
-    // --- DISPLAY LISTINGS ---
     function displayFiltered() {
         const grid = document.getElementById('listingsGrid');
         const locSearch = document.getElementById('searchLoc').value.toLowerCase();
@@ -371,7 +394,6 @@
         grid.innerHTML = filtered.length ? "" : '<p style="grid-column: 1/-1; text-align:center;">No listings found.</p>';
         
         filtered.forEach(data => {
-            // Check if user is a landlord and owns this specific post
             const canManage = currentUserData.userType === 'landlord' && auth.currentUser.uid === data.landlordId;
 
             grid.innerHTML += `
@@ -411,12 +433,8 @@
         });
     }
 
-    // --- DELETE POST (WITH SECURITY CHECK) ---
     window.deletePost = async (id) => {
-        if (currentUserData.userType !== 'landlord') {
-            return Swal.fire("Access Denied", "Tenants cannot delete posts.", "error");
-        }
-
+        if (currentUserData.userType !== 'landlord') return;
         const res = await Swal.fire({ 
             title: 'Are you sure?', 
             text: "This listing will be permanently removed.", 
@@ -427,13 +445,13 @@
         if (res.isConfirmed) await remove(ref(db, 'listings/' + id));
     };
 
-    // --- EDIT POST (POPULATES THE MODAL) ---
     window.editPost = (id) => {
         if (currentUserData.userType !== 'landlord') return;
         
         const item = allListings.find(l => l.id === id);
         document.getElementById('modalTitle').innerText = "Edit Property";
         document.getElementById('editId').value = id;
+        document.getElementById('existingImg').value = item.imageUrl;
         
         document.getElementById('pTitle').value = item.title;
         document.getElementById('pCategory').value = item.category;
@@ -442,7 +460,7 @@
         document.getElementById('pRooms').value = item.rooms === "N/A" ? "" : item.rooms;
         document.getElementById('pSize').value = item.size === "N/A" ? "" : item.size;
         document.getElementById('pAmenities').value = item.amenities === "None" ? "" : item.amenities;
-        document.getElementById('pImg').value = item.imageUrl.includes("via.placeholder") ? "" : item.imageUrl;
+        document.getElementById('pImgFile').value = ""; 
         
         pModal.style.display = 'flex';
     };
