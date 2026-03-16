@@ -50,6 +50,11 @@
         .modal-field label { display: block; font-size: 11px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
         .modal-field input, .modal-field select, .modal-field textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
 
+        /* --- SWEETALERT OVERRIDE --- */
+        .swal2-container {
+            z-index: 10000 !important; /* Forces popup to the very top layer */
+        }
+
         /* --- SEARCH & LISTINGS --- */
         .filter-section { background: white; padding: 20px 5%; display: flex; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid #ddd; }
         .filter-group { flex: 1; min-width: 200px; }
@@ -207,17 +212,17 @@
     const pModal = document.getElementById('postModal');
 
     document.getElementById('settingsBtn').onclick = () => {
-        document.getElementById('editName').value = currentUserData.displayName;
-        document.getElementById('editAddress').value = currentUserData.address;
-        document.getElementById('editContact').value = currentUserData.contact;
-        document.getElementById('editRole').value = currentUserData.userType;
+        document.getElementById('editName').value = currentUserData.displayName || "";
+        document.getElementById('editAddress').value = currentUserData.address || "";
+        document.getElementById('editContact').value = currentUserData.contact || "";
+        document.getElementById('editRole').value = currentUserData.userType || "tenant";
         sModal.style.display = 'flex';
     };
     document.getElementById('postBtn').onclick = () => pModal.style.display = 'flex';
     document.getElementById('closeSettings').onclick = () => sModal.style.display = 'none';
     document.getElementById('closePost').onclick = () => pModal.style.display = 'none';
 
-    // --- SETTINGS LOGIC WITH 30-DAY LIMIT ---
+    // --- SETTINGS LOGIC ---
     document.getElementById('saveSettingsBtn').onclick = async () => {
         const uid = auth.currentUser.uid;
         const now = Date.now();
@@ -228,7 +233,6 @@
         const newContact = document.getElementById('editContact').value;
         const newRole = document.getElementById('editRole').value;
 
-        // Check if personal info changed
         const infoChanged = newName !== currentUserData.displayName || 
                             newAddress !== currentUserData.address || 
                             newContact !== currentUserData.contact;
@@ -237,7 +241,12 @@
             const timeDiff = now - currentUserData.lastProfileUpdate;
             if (timeDiff < thirtyDaysMs) {
                 const daysLeft = Math.ceil((thirtyDaysMs - timeDiff) / (1000 * 60 * 60 * 24));
-                return Swal.fire('Wait!', `Personal details can only be changed once a month. Try again in ${daysLeft} days. (Role can still be changed if info is kept the same).`, 'warning');
+                return Swal.fire({
+                    target: 'body',
+                    icon: 'warning',
+                    title: 'Update Restricted',
+                    text: `Personal details can only be changed once a month. Try again in ${daysLeft} days.`
+                });
             }
         }
 
@@ -253,11 +262,16 @@
         try {
             await update(ref(db, 'users/' + uid), updates);
             sModal.style.display = 'none';
-            Swal.fire('Success', 'Profile Updated', 'success');
+            Swal.fire({
+                target: 'body',
+                icon: 'success',
+                title: 'Profile Updated',
+                timer: 1500
+            });
             currentUserData = {...currentUserData, ...updates};
             updateUIByRole(currentUserData);
         } catch (err) {
-            Swal.fire('Error', err.message, 'error');
+            Swal.fire({ target: 'body', icon: 'error', title: 'Error', text: err.message });
         }
     };
 
@@ -270,15 +284,19 @@
         const landmarks = document.getElementById('pLandmarks').value;
         const img = document.getElementById('pImg').value;
 
-        if(!title || !price || !loc) return Swal.fire('Error', 'Fill required fields', 'error');
+        if(!title || !price || !loc) return Swal.fire({ target: 'body', icon: 'error', text: 'Fill required fields' });
 
-        const newRef = push(ref(db, 'listings'));
-        await set(newRef, {
-            title, price: Number(price), location: loc, size, landmarks, 
-            imageUrl: img, landlordId: auth.currentUser.uid, rating: "New"
-        });
-        pModal.style.display = 'none';
-        Swal.fire('Success', 'Property Posted!', 'success');
+        try {
+            const newRef = push(ref(db, 'listings'));
+            await set(newRef, {
+                title, price: Number(price), location: loc, size, landmarks, 
+                imageUrl: img, landlordId: auth.currentUser.uid, rating: "New"
+            });
+            pModal.style.display = 'none';
+            Swal.fire({ target: 'body', icon: 'success', title: 'Property Posted!' });
+        } catch (err) {
+            Swal.fire({ target: 'body', icon: 'error', text: err.message });
+        }
     };
 
     // --- LOAD & FILTER ---
@@ -296,7 +314,7 @@
         const priceMax = document.getElementById('priceFilter').value;
 
         const filtered = allListings.filter(item => {
-            const matchLoc = item.location.toLowerCase().includes(locSearch);
+            const matchLoc = (item.location || "").toLowerCase().includes(locSearch);
             const matchPrice = priceMax === 'all' || item.price <= Number(priceMax);
             return matchLoc && matchPrice;
         });
