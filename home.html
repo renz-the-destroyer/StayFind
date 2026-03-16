@@ -50,16 +50,17 @@
         .modal-field label { display: block; font-size: 11px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
         .modal-field input, .modal-field select, .modal-field textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
 
-        /* --- LISTINGS & ACTIONS --- */
+        /* --- LISTING CARDS --- */
         .container { padding: 30px 5%; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .listing-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
         .listing-img { width: 100%; height: 200px; background: #eee; object-fit: cover; }
         .listing-info { padding: 15px; }
         .price { color: #0d47a1; font-size: 1.2rem; font-weight: 800; }
         
-        /* Edit/Delete Float Buttons */
+        /* Edit/Delete Float Buttons (Hidden by default) */
         .admin-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 20; }
-        .ctrl-btn { background: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .ctrl-btn { background: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; }
+        .ctrl-btn:hover { transform: scale(1.1); }
         .btn-edit { color: #fbc02d; }
         .btn-delete { color: #f44336; }
 
@@ -111,7 +112,9 @@
         <div class="modal-content">
             <i class="fas fa-times close-modal" id="closePost"></i>
             <h2 id="modalTitle" style="color:#0d47a1; margin-top:0;">Post Property</h2>
-            <input type="hidden" id="editId"> <div class="modal-field"><label>Property Title</label><input type="text" id="pTitle"></div>
+            <input type="hidden" id="editId">
+            
+            <div class="modal-field"><label>Property Title</label><input type="text" id="pTitle"></div>
             <div style="display:flex; gap:10px;">
                 <div class="modal-field" style="flex:1;"><label>Category</label><select id="pCategory"><option value="Rent">Rent</option><option value="Sale">Sale</option></select></div>
                 <div class="modal-field" style="flex:1;"><label>Rooms</label><input type="number" id="pRooms"></div>
@@ -192,32 +195,14 @@
         }
     }
 
-    // Modal Control
-    const sModal = document.getElementById('settingsModal');
     const pModal = document.getElementById('postModal');
-    document.getElementById('settingsBtn').onclick = () => sModal.style.display = 'flex';
     document.getElementById('postBtn').onclick = () => {
         document.getElementById('modalTitle').innerText = "Post Property";
-        document.getElementById('editId').value = ""; // Reset edit ID
+        document.getElementById('editId').value = ""; 
         pModal.style.display = 'flex';
     };
-    document.getElementById('closeSettings').onclick = () => sModal.style.display = 'none';
     document.getElementById('closePost').onclick = () => pModal.style.display = 'none';
 
-    // Settings Update (30-day rule)
-    document.getElementById('saveSettingsBtn').onclick = async () => {
-        const uid = auth.currentUser.uid;
-        const updates = {
-            displayName: document.getElementById('editName').value,
-            address: document.getElementById('editAddress').value,
-            contact: document.getElementById('editContact').value,
-            userType: document.getElementById('editRole').value
-        };
-        await update(ref(db, 'users/' + uid), updates);
-        location.reload();
-    };
-
-    // SUBMIT OR UPDATE LISTING
     document.getElementById('submitPost').onclick = async () => {
         const id = document.getElementById('editId').value;
         const postData = {
@@ -235,11 +220,10 @@
 
         if (id) {
             await update(ref(db, 'listings/' + id), postData);
-            Swal.fire("Updated!", "Your post has been updated.", "success");
+            Swal.fire("Success", "Post updated!", "success");
         } else {
-            const newRef = push(ref(db, 'listings'));
-            await set(newRef, postData);
-            Swal.fire("Posted!", "Your property is now live.", "success");
+            await set(push(ref(db, 'listings')), postData);
+            Swal.fire("Success", "Post published!", "success");
         }
         pModal.style.display = 'none';
     };
@@ -259,10 +243,13 @@
         
         allListings.forEach(data => {
             if (data.location.toLowerCase().includes(locSearch)) {
-                const isOwner = auth.currentUser.uid === data.landlordId;
+                // THE PROTECTION LOGIC
+                // Only show buttons if logged in user is a LANDLORD AND is the OWNER of this post
+                const canManage = currentUserData.userType === 'landlord' && auth.currentUser.uid === data.landlordId;
+                
                 grid.innerHTML += `
                     <div class="listing-card">
-                        ${isOwner ? `
+                        ${canManage ? `
                             <div class="admin-controls">
                                 <button class="ctrl-btn btn-edit" onclick="editPost('${data.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="ctrl-btn btn-delete" onclick="deletePost('${data.id}')"><i class="fas fa-trash"></i></button>
@@ -272,6 +259,7 @@
                         <div class="listing-info">
                             <div class="price">₱${data.price.toLocaleString()}</div>
                             <div style="font-weight:bold;">${data.title}</div>
+                            <div class="location">${data.location}</div>
                             <div class="details"><span>${data.rooms} Rms</span> | <span>${data.size} sqm</span></div>
                             <a href="tel:${data.landlordContact}" class="contact-btn">Contact Landlord</a>
                         </div>
@@ -280,13 +268,25 @@
         });
     }
 
-    // Window functions for the buttons
     window.deletePost = async (id) => {
-        const res = await Swal.fire({ title: 'Delete?', text: "You can't undo this!", icon: 'warning', showCancelButton: true });
+        // Double Check: Even if they click the button, verify the role again
+        if (currentUserData.userType !== 'landlord') {
+            return Swal.fire("Access Denied", "Tenants cannot delete posts.", "error");
+        }
+
+        const res = await Swal.fire({ 
+            title: 'Are you sure?', 
+            text: "This listing will be permanently removed.", 
+            icon: 'warning', 
+            showCancelButton: true,
+            confirmButtonColor: '#d33'
+        });
         if (res.isConfirmed) await remove(ref(db, 'listings/' + id));
     };
 
     window.editPost = (id) => {
+        if (currentUserData.userType !== 'landlord') return;
+        
         const item = allListings.find(l => l.id === id);
         document.getElementById('modalTitle').innerText = "Edit Property";
         document.getElementById('editId').value = id;
@@ -294,6 +294,9 @@
         document.getElementById('pPrice').value = item.price;
         document.getElementById('pLoc').value = item.location;
         document.getElementById('pImg').value = item.imageUrl;
+        document.getElementById('pRooms').value = item.rooms;
+        document.getElementById('pSize').value = item.size;
+        document.getElementById('pAmenities').value = item.amenities;
         pModal.style.display = 'flex';
     };
 
